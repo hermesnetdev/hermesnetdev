@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enidor · Your devices, one private file system</title>
+  <meta name="description" content="Enidor links your Mac and Windows computers into a private, end-to-end encrypted peer-to-peer mesh. Browse, stream and share files directly between devices, with no cloud storage in the middle.">
+  <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0e11" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Enidor">
+  <meta property="og:description" content="Your devices, one private file system. A zero-trust peer-to-peer mesh for macOS and Windows.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="./" aria-label="Enidor home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M9 22 16 9l7 13z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="16" cy="9" r="3.5"/><circle cx="9" cy="22" r="3.5"/><circle cx="23" cy="22" r="3.5"/>
+        </svg>
+        <span>Enidor</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#security">Security</a>
+        <a href="#start">Get started</a>
+        <a href="#releases">Releases</a>
+      </nav>
+      <a class="btn btn-primary btn-small" href="#releases">Download</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="pill">Early access</span><span>by hermesnetdev</span></p>
+          <h1>Your devices, one private file system.</h1>
+          <p class="lede">Enidor links your computers into a zero-trust, peer-to-peer mesh. Open a paired device and its files are just there. Stream, browse and share over encrypted tunnels, with no cloud storage in the middle.</p>
+          <div class="cta" id="download">
+            <a class="btn btn-primary" data-platform="mac" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+              <span>Download for macOS</span>
+            </a>
+            <a class="btn btn-secondary" data-platform="windows" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+              <span>Download for Windows</span>
+            </a>
+          </div>
+          <p class="cta-meta" id="cta-meta">macOS (Apple Silicon &amp; Intel) · Windows 10 &amp; 11 (64-bit)</p>
+        </div>
+
+        <figure class="hero-figure">
+          <svg class="diagram" viewBox="0 0 480 400" role="img" aria-labelledby="diagram-title">
+            <title id="diagram-title">A Mac and a Windows PC connected by a direct encrypted tunnel, with a relay as fallback and a guest joining through a room code</title>
+
+            <!-- relay fallback routes -->
+            <path class="d-link-relay" d="M100 156 C100 100 115 50 150 50"/>
+            <path class="d-link-relay" d="M330 50 C365 50 380 100 380 156"/>
+            <!-- guest route -->
+            <path class="d-link-guest" d="M380 244 C380 305 355 350 310 350"/>
+            <!-- direct tunnel -->
+            <path id="tunnel" class="d-link-direct" d="M170 200 H310"/>
+            <text class="d-label" x="240" y="186" text-anchor="middle">encrypted P2P</text>
+            <g class="d-packets">
+              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M170 200 H310"/></circle>
+              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M310 200 H170"/></circle>
+            </g>
+
+            <!-- relay -->
+            <rect class="d-node d-node-relay" x="150" y="22" width="180" height="56" rx="28"/>
+            <text class="d-title" x="240" y="46" text-anchor="middle">Relay</text>
+            <text class="d-sub" x="240" y="65" text-anchor="middle">sees ciphertext only</text>
+
+            <!-- mac -->
+            <rect class="d-node" x="30" y="156" width="140" height="88" rx="14"/>
+            <g class="d-icon" transform="translate(48 174)">
+              <rect x="2" y="0" width="20" height="13" rx="2"/><path d="M-1 17h26"/>
+            </g>
+            <text class="d-title" x="48" y="216">MacBook</text>
+            <circle class="d-dot" cx="52" cy="231" r="3.5"/>
+            <text class="d-sub" x="61" y="235">online</text>
+
+            <!-- windows -->
+            <rect class="d-node" x="310" y="156" width="140" height="88" rx="14"/>
+            <g class="d-icon" transform="translate(328 174)">
+              <rect x="0" y="0" width="22" height="14" rx="2"/><path d="M11 14v4M6 18h10"/>
+            </g>
+            <text class="d-title" x="328" y="216">Windows PC</text>
+            <circle class="d-dot" cx="332" cy="231" r="3.5"/>
+            <text class="d-sub" x="341" y="235">online</text>
+
+            <!-- guest -->
+            <rect class="d-node d-node-guest" x="170" y="318" width="140" height="64" rx="14"/>
+            <text class="d-title" x="188" y="344">Guest</text>
+            <text class="d-sub d-code" x="188" y="366">room 482 913</text>
+          </svg>
+          <figcaption>Paired devices talk directly over an encrypted tunnel. If a firewall blocks that, traffic goes through a relay that only ever sees encrypted data. Guests join a shared folder with a 6-digit room code.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="kicker">Features</p>
+          <h2>Everything on your other computer, one click away.</h2>
+          <p>Pair your devices once. After that there's nothing to upload, sync or copy.</p>
+        </header>
+
+        <div class="features">
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <h3>Mesh Vault</h3>
+            <p>Click any paired device that's online to mount its vault and browse its drive. No room codes, no manual transfers.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10.5v5M9.5 13h5"/></svg></span>
+            <h3>Virtual volumes</h3>
+            <p>Downloads, Documents, Desktop and Pictures are mapped from the start. Add an external drive, a repo or any folder with one click.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20v.01M18 18v3h3v-3z"/></svg></span>
+            <h3>QR code pairing</h3>
+            <p>Show a QR code on one device and scan it from the other with the built-in scanner, using a webcam or an image file.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9V5a2 2 0 0 1 2-2h4.5L11 9M11 9l-1.5-6H15l1.5 6"/></svg></span>
+            <h3>Multi-tab workspace</h3>
+            <p>Browse several devices and guest rooms side by side. Directory caching makes switching between tabs instant.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17M3 21h18"/><path d="M14.5 12h.01"/></svg></span>
+            <h3>Guest rooms</h3>
+            <p>Share up to five folders at once with anyone, using 6-digit room codes. Revoke access with one click or by closing the app.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></span>
+            <h3>Stream before you download</h3>
+            <p>Watch videos, play audio and view images straight from the host over the tunnel, full screen included.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
+            <h3>True peer-to-peer speed</h3>
+            <p>Files move directly between devices, so your network is the only limit. No cloud storage quotas or upload queues.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-4M4 4v3.5h3.5M4 13a8 8 0 0 0 14.9 4M20 20v-3.5h-3.5"/></svg></span>
+            <h3>Automatic updates</h3>
+            <p>New versions download in the background and install themselves. You only ever download Enidor once.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="security" class="section band">
+      <div class="wrap security-grid">
+        <header class="section-head">
+          <p class="kicker">Security &amp; privacy</p>
+          <h2>Nobody in the middle can read your files. That includes us.</h2>
+          <p>Enidor was built zero-trust from the start. Your files stay on your drives and only ever travel between devices you chose.</p>
+        </header>
+        <ul class="security-list">
+          <li>
+            <h3>Paired devices only</h3>
+            <p>Opening a vault requires an Ed25519 cryptographic handshake. Only devices you've explicitly paired can see or request files.</p>
+          </li>
+          <li>
+            <h3>A relay that can't see</h3>
+            <p>When strict NAT forces traffic through our relay, it acts as a dumb pipe. Transfers are encrypted in transit, so the relay can't read them.</p>
+          </li>
+          <li>
+            <h3>Mutual revocation</h3>
+            <p>Lost a device? Unpair it and the tunnel closes immediately. Trust is deleted on both ends and access is gone for good.</p>
+          </li>
+          <li>
+            <h3>No cloud storage</h3>
+            <p>Files are never uploaded to a middleman database. They move from point A to point B and nowhere else.</p>
+          </li>
+          <li>
+            <h3>Strictly scoped access</h3>
+            <p>Enidor only reads the folders you mount or share. The rest of your disk stays locked down.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="start" class="section">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="kicker">Get started</p>
+          <h2>Up and running in four steps.</h2>
+        </header>
+        <ol class="steps">
+          <li>
+            <span class="step-num">01</span>
+            <h3>Download</h3>
+            <p>Get the build for your computer from the <a href="#releases">releases below</a>. Install it on every device you want in your mesh.</p>
+          </li>
+          <li>
+            <span class="step-num">02</span>
+            <h3>Pair your devices</h3>
+            <p>On the first device, click the phone icon in the sidebar to show a QR code. On the second, click <strong>+</strong> and scan it. Name the device and you're paired.</p>
+          </li>
+          <li>
+            <span class="step-num">03</span>
+            <h3>Add folders to your vault</h3>
+            <p>Under <strong>Mounted Vault Folders</strong>, click <strong>+</strong> to add any folder, drive or project. Paired devices can open it right away.</p>
+          </li>
+          <li>
+            <span class="step-num">04</span>
+            <h3>Share with a guest</h3>
+            <p>Click <strong>+ Share New Folder</strong> and send the 6-digit code. Your friend enters it in <strong>Remote Explorer</strong>. Access ends when you click Stop or quit.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="releases" class="section">
+      <div class="wrap">
+        <header class="section-head">
+          <p class="kicker">Releases</p>
+          <h2>Download Enidor</h2>
+          <p>Builds are published on <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">GitHub Releases</a> and listed here as soon as they go out. Once installed, Enidor keeps itself up to date.</p>
+        </header>
+
+        <div id="releases-root" class="releases" aria-live="polite">
+          <p class="status">Loading releases…</p>
+        </div>
+        <noscript>
+          <p class="status">Turn on JavaScript to see the list here, or <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">browse all releases on GitHub</a>.</p>
+        </noscript>
+
+        <aside class="note">
+          <strong>Early access.</strong> The core engine works, but you may run into the occasional rough edge while we iterate quickly. Found a bug or want a feature? <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Open an issue</a>.
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>© <span id="year">2026</span> hermesnetdev</p>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="https://github.com/hermesnetdev">GitHub</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">All releases</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Report an issue</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>
