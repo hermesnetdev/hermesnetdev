@@ -15,7 +15,7 @@ stack, so nothing is fetched at runtime):
   tile in the download band
 - `assets/mark.png`: the same mark cropped tight on transparency, used as the header logo and
   inverted by CSS in dark mode
-- `assets/og.png`: the 1200×630 share card used by every link preview
+- `assets/og.jpg`: the 2400×1260 share card used by every link preview
 - `.nojekyll`: tells GitHub Pages to serve the files as-is
 
 ## Product shots
@@ -53,9 +53,10 @@ Every absolute URL in those tags points at `https://hermesnetdev.github.io/herme
 **If the site moves to a custom domain, update those URLs** — `og:url`, `og:image`,
 `og:image:secure_url`, `twitter:image`, `canonical`, and the `url`/`image` fields in the JSON-LD.
 
-`assets/og.png` is 1200×630 and under 300 KB, which keeps WhatsApp and Telegram previews
-working. It was rendered from a small standalone HTML card in a headless browser rather than
-drawn by hand, so it can be regenerated from the same page whenever the tagline changes.
+`assets/og.jpg` is 2400×1260 — retina-sharp at the 1200-wide size every platform displays —
+and 197 KB, which keeps it under the ~300 KB ceiling where WhatsApp and Telegram stop
+generating previews. It was rendered from a small standalone HTML card in a headless browser
+rather than drawn by hand, so it can be regenerated whenever the tagline changes.
 
 After changing any of this, re-scrape the caches so the old preview stops showing:
 
