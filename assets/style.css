@@ -384,11 +384,6 @@ h1 {
   stroke-width: 1.2;
 }
 
-.d-node-relay,
-.d-node-guest {
-  fill: var(--surface-2);
-}
-
 .d-title {
   fill: var(--text);
   font-size: 15px;
@@ -427,22 +422,6 @@ h1 {
   fill: none;
   stroke: var(--accent);
   stroke-width: 2.5;
-  stroke-linecap: round;
-}
-
-.d-link-relay {
-  fill: none;
-  stroke: var(--muted);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 6;
-  opacity: 0.7;
-}
-
-.d-link-guest {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.8;
-  stroke-dasharray: 1 6;
   stroke-linecap: round;
 }
 

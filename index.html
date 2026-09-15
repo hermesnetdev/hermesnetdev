@@ -60,24 +60,20 @@
         </div>
 
         <figure class="hero-figure">
-          <svg class="diagram" viewBox="0 0 480 380" role="img" aria-labelledby="diagram-title">
-            <title id="diagram-title">A laptop on any network reaching a home server's local port, a desktop's drive, a phone camera and another computer's speakers over one encrypted peer-to-peer tunnel, with a relay as fallback</title>
-
-            <!-- relay fallback route -->
-            <path class="d-link-relay" d="M84 264 C84 318 100 330 128 330"/>
-            <path class="d-link-relay" d="M280 330 C330 330 381 318 381 292"/>
+          <svg class="diagram" viewBox="0 0 480 300" role="img" aria-labelledby="diagram-title">
+            <title id="diagram-title">A laptop on any network reaching a home server's local port, a desktop's drive, a phone camera and another computer's speakers over one direct encrypted peer-to-peer tunnel</title>
 
             <!-- direct tunnel + fan-out to the ecosystem -->
-            <path class="d-link-direct" d="M150 220 H262"/>
-            <path class="d-link-direct" d="M262 220 C282 220 282 84 300 84"/>
-            <path class="d-link-direct" d="M262 220 C282 220 282 140 300 140"/>
-            <path class="d-link-direct" d="M262 220 C282 220 282 196 300 196"/>
-            <path class="d-link-direct" d="M262 220 C282 220 282 252 300 252"/>
-            <circle class="d-dot" cx="262" cy="220" r="5"/>
-            <text class="d-label" x="200" y="206" text-anchor="middle">encrypted P2P</text>
+            <path class="d-link-direct" d="M150 168 H262"/>
+            <path class="d-link-direct" d="M262 168 C282 168 282 84 300 84"/>
+            <path class="d-link-direct" d="M262 168 C282 168 282 140 300 140"/>
+            <path class="d-link-direct" d="M262 168 C282 168 282 196 300 196"/>
+            <path class="d-link-direct" d="M262 168 C282 168 282 252 300 252"/>
+            <circle class="d-dot" cx="262" cy="168" r="5"/>
+            <text class="d-label" x="206" y="154" text-anchor="middle">encrypted P2P</text>
             <g class="d-packets">
-              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M150 220 H262"/></circle>
-              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M262 220 H150"/></circle>
+              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M150 168 H262"/></circle>
+              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M262 168 H150"/></circle>
             </g>
 
             <!-- your ecosystem -->
@@ -100,20 +96,15 @@
             <text class="d-sub" x="316" y="266">speakers</text>
 
             <!-- this device -->
-            <rect class="d-node" x="18" y="176" width="132" height="88" rx="14"/>
-            <g class="d-icon" transform="translate(36 194)">
+            <rect class="d-node" x="18" y="124" width="132" height="88" rx="14"/>
+            <g class="d-icon" transform="translate(36 142)">
               <rect x="2" y="0" width="20" height="13" rx="2"/><path d="M-1 17h26"/>
             </g>
-            <text class="d-title" x="36" y="236">This laptop</text>
-            <circle class="d-dot" cx="40" cy="251" r="3.5"/>
-            <text class="d-sub" x="49" y="255">any network</text>
-
-            <!-- relay -->
-            <rect class="d-node d-node-relay" x="128" y="306" width="152" height="48" rx="24"/>
-            <text class="d-title" x="204" y="326" text-anchor="middle">Relay</text>
-            <text class="d-sub" x="204" y="344" text-anchor="middle">sees ciphertext only</text>
+            <text class="d-title" x="36" y="184">This laptop</text>
+            <circle class="d-dot" cx="40" cy="199" r="3.5"/>
+            <text class="d-sub" x="49" y="203">any network</text>
           </svg>
-          <figcaption>Your devices hold open one encrypted tunnel to each other, so a drive, a local port or a piece of hardware is reachable without exposing anything to the internet. If a firewall blocks the direct path, traffic falls back to a relay that only ever sees encrypted data.</figcaption>
+          <figcaption>Your devices negotiate their own way through NAT and firewalls and hold one encrypted tunnel open between them, so a drive, a local port or a piece of hardware is reachable without exposing anything to the internet.</figcaption>
         </figure>
       </div>
     </section>
@@ -149,8 +140,8 @@
           </article>
           <article class="feature">
             <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
-            <h3>Peer-to-peer, not round-tripped</h3>
-            <p>Traffic goes straight from one device to the other, so your own network is the only speed limit. Nothing is staged in cloud storage on the way.</p>
+            <h3>Peer-to-peer, end to end</h3>
+            <p>Our own transport punches through NAT and firewalls and connects the two devices directly, so your network is the only speed limit. Nothing is staged, queued or copied in between.</p>
           </article>
           <article class="feature">
             <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></span>
@@ -176,7 +167,7 @@
         <header class="section-head">
           <p class="kicker">Security &amp; privacy</p>
           <h2>There’s no door to knock on.</h2>
-          <p>The usual way to host something at home is to open a hole in your router and hope nobody finds it. Enidor doesn't open one at all — there's no public address to scan, and nothing in the middle that can read what passes through.</p>
+          <p>The usual way to host something at home is to open a hole in your router and hope nobody finds it. Enidor doesn't open one at all — there's no public address to scan, and nothing in the middle to read what passes through.</p>
         </header>
         <ul class="security-list">
           <li>
@@ -188,12 +179,12 @@
             <p>Every connection starts with an Ed25519 cryptographic handshake. Only devices you explicitly paired can open a tunnel or ask for anything through it.</p>
           </li>
           <li>
-            <h3>A relay that can't see</h3>
-            <p>When strict NAT forces traffic through our relay, it's a dumb pipe. Everything is encrypted in transit, so the relay carries ciphertext and nothing else.</p>
-          </li>
-          <li>
             <h3>Mutual revocation</h3>
             <p>Lost a device? Unpair it and the tunnel closes immediately. Trust is deleted on both ends and access is gone for good.</p>
+          </li>
+          <li>
+            <h3>No middleman, by design</h3>
+            <p>There is no server in the path holding your traffic, and no third party to trust with it. Devices talk to each other and to nothing else.</p>
           </li>
           <li>
             <h3>Strictly scoped access</h3>
