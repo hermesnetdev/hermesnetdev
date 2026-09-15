@@ -1,13 +1,24 @@
 # hermesnetdev
 
-Website for **Enidor**, served with GitHub Pages from the `main` branch.
+Marketing site for **Enidor** — the sovereign private mesh — served with GitHub Pages from the
+`main` branch.
 
-It's a plain static site with no build step:
+Plain static site, no build step and no external dependencies (the type is the system font
+stack, so nothing is fetched at runtime):
 
 - `index.html`: the page
-- `assets/style.css`: styles (light and dark themes follow the OS setting)
+- `assets/style.css`: design system — tokens, light/dark themes, and sections that stay dark in
+  both themes via the `.dark` class
 - `assets/app.js`: loads releases live from [hermesnetdev/From_project_1_releases](https://github.com/hermesnetdev/From_project_1_releases/releases)
+- `assets/ui.js`: reveal-on-scroll for sections marked `data-reveal`
 - `.nojekyll`: tells GitHub Pages to serve the files as-is
+
+## Product shots
+
+The screenshots on the page are built in HTML and CSS rather than exported as images — the app
+window (`.mock`), the chat and Micro-Room card (`.chat` / `.attach`), the activity monitor
+(`.gauges` / `.log`) and the ecosystem diagram (inline SVG). They pick up theme tokens
+automatically and stay crisp at any zoom. Replace them with real captures when there are some.
 
 ## Releases
 

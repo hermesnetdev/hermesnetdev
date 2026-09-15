@@ -3,19 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Enidor · Host anything. Expose nothing.</title>
-  <meta name="description" content="Enidor turns the devices you already own into a private peer-to-peer mesh. Reach storage, locally running services and hardware — a phone camera, another computer's speakers — from anywhere, with no public IP, no port forwarding and no cloud in the middle.">
-  <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0c0e11" media="(prefers-color-scheme: dark)">
+  <title>Enidor — The cloud you already own</title>
+  <meta name="description" content="Enidor links your computers into one sovereign, end-to-end encrypted mesh. Mount any of your devices, send revocable files to peers, host guest rooms and stream media — with no cloud servers, no storage caps and no public IP. Free for macOS and Windows.">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Enidor">
-  <meta property="og:description" content="Host anything. Expose nothing. Hosting without a public IP — a zero-trust peer-to-peer mesh that lets you reach storage, local services and hardware across your own devices.">
+  <meta property="og:title" content="Enidor — The cloud you already own">
+  <meta property="og:description" content="The sovereign private mesh. Your devices become the servers: zero-trust, end-to-end encrypted, no cloud in the middle.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js" defer></script>
+  <script src="assets/ui.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -30,208 +28,432 @@
         <span>Enidor</span>
       </a>
       <nav class="nav" aria-label="Primary">
-        <a href="#features">What you can reach</a>
+        <a href="#ecosystem">Ecosystem</a>
+        <a href="#peers">Peers</a>
+        <a href="#sharing">Sharing</a>
+        <a href="#control">Control</a>
         <a href="#security">Security</a>
         <a href="#start">Get started</a>
-        <a href="#releases">Releases</a>
       </nav>
       <a class="btn btn-primary btn-small" href="#releases">Download</a>
     </div>
   </header>
 
   <main id="main">
+
+    <!-- ============================ hero ============================ -->
     <section class="hero">
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="pill">Early access</span><span>by hermesnetdev</span></p>
-          <h1>Host anything.<br>Expose nothing.</h1>
-          <p class="lede">Hosting without a public IP. Enidor turns the devices you already own into one private, peer-to-peer mesh. A drive, a service running on localhost, your phone's camera, the speakers on the machine in the next room — reach any of it from anywhere. No public IP, no port forwarding, no cloud in the middle.</p>
-          <div class="cta" id="download">
-            <a class="btn btn-primary" data-platform="mac" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-              <span>Download for macOS</span>
-            </a>
-            <a class="btn btn-secondary" data-platform="windows" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-              <span>Download for Windows</span>
-            </a>
+      <div class="wrap">
+        <p class="eyebrow">Enidor</p>
+        <h1>The cloud you already own.</h1>
+        <p class="lede">One sovereign, encrypted mesh across every device you own. No servers in the middle. No storage caps. No public IP. Your files never leave your hardware until you say so.</p>
+
+        <div class="cta" id="download">
+          <a class="btn btn-primary" data-platform="mac" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+            <span>Download for macOS</span>
+          </a>
+          <a class="btn btn-secondary" data-platform="windows" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+            <span>Download for Windows</span>
+          </a>
+        </div>
+        <p class="cta-meta" id="cta-meta">Free · macOS (Apple Silicon &amp; Intel) · Windows 10 &amp; 11 (64-bit)</p>
+
+        <div class="hero-stage" data-reveal>
+          <div class="mock" aria-hidden="true">
+            <div class="mock-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="mock-title">Enidor</span>
+              <span class="mock-handle">@alex</span>
+            </div>
+            <div class="mock-body">
+              <aside class="mock-side">
+                <p class="mock-label">My Ecosystem</p>
+                <ul class="mock-list">
+                  <li><span class="dot"></span>MacBook Pro<span class="meta">this device</span></li>
+                  <li class="is-active"><span class="dot"></span>Desk PC<span class="meta">mounted</span></li>
+                  <li><span class="dot"></span>Studio Mac<span class="meta">online</span></li>
+                  <li><span class="dot off"></span>Home Server<span class="meta">offline</span></li>
+                </ul>
+                <p class="mock-label">My Peers</p>
+                <ul class="mock-list">
+                  <li><span class="dot"></span>@maya<span class="meta">2 files</span></li>
+                  <li><span class="dot off"></span>@sam<span class="meta">—</span></li>
+                </ul>
+              </aside>
+              <div class="mock-main">
+                <p class="mock-crumbs">Desk PC › Vault › Projects</p>
+                <ul class="mock-files">
+                  <li>
+                    <span class="glyph accent"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></span>
+                    <span><span class="name">Q3 Render.mov</span></span>
+                    <span class="size">8.4 GB</span>
+                  </li>
+                  <li>
+                    <span class="glyph"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+                    <span>Archive 2024</span>
+                    <span class="size">1,204 items</span>
+                  </li>
+                  <li>
+                    <span class="glyph"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg></span>
+                    <span>keynote-final.key</span>
+                    <span class="size">212 MB</span>
+                  </li>
+                  <li>
+                    <span class="glyph"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="m4 17 5-4 4 3 3-2 4 3"/></svg></span>
+                    <span>shoot-raw</span>
+                    <span class="size">86.2 GB</span>
+                  </li>
+                </ul>
+                <div class="mock-transfer">
+                  <div class="row">
+                    <span class="glyph accent"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
+                    <span><span class="name">Streaming Q3 Render.mov</span><br><span class="mock-crumbs">direct tunnel · Desk PC → this device</span></span>
+                    <span class="meta">214 MB/s</span>
+                  </div>
+                  <div class="meter"><span style="width:62%"></span></div>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="cta-meta" id="cta-meta">macOS (Apple Silicon &amp; Intel) · Windows 10 &amp; 11 (64-bit)</p>
         </div>
+      </div>
+    </section>
 
-        <figure class="hero-figure">
-          <svg class="diagram" viewBox="0 0 480 300" role="img" aria-labelledby="diagram-title">
-            <title id="diagram-title">A laptop on any network reaching a home server's local port, a desktop's drive, a phone camera and another computer's speakers over one direct encrypted peer-to-peer tunnel</title>
+    <!-- ============================ vision ============================ -->
+    <section class="section alt">
+      <div class="wrap">
+        <div class="section-head center" data-reveal>
+          <p class="kicker">Why Enidor</p>
+          <h2>You've been paying rent to store your own files.</h2>
+          <p>For a decade we handed our data to public cloud infrastructure — monthly fees to keep our files on someone else's computer, privacy traded for convenience. Enidor was engineered to take that back. Your devices are the servers. Everything else is just a tunnel between them.</p>
+        </div>
+        <div class="stats" data-reveal>
+          <div class="stat">
+            <p class="stat-num">0</p>
+            <p>cloud servers holding your files. Data moves point to point, or it doesn't move.</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">∞</p>
+            <p>storage. Your mesh is as big as the drives you already own — no tiers, no upgrades.</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">100%</p>
+            <p>yours. Zero-knowledge by architecture: we can't read your files or your messages.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-            <!-- direct tunnel + fan-out to the ecosystem -->
-            <path class="d-link-direct" d="M150 168 H262"/>
-            <path class="d-link-direct" d="M262 168 C282 168 282 84 300 84"/>
-            <path class="d-link-direct" d="M262 168 C282 168 282 140 300 140"/>
-            <path class="d-link-direct" d="M262 168 C282 168 282 196 300 196"/>
-            <path class="d-link-direct" d="M262 168 C282 168 282 252 300 252"/>
-            <circle class="d-dot" cx="262" cy="168" r="5"/>
-            <text class="d-label" x="206" y="154" text-anchor="middle">encrypted P2P</text>
-            <g class="d-packets">
-              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M150 168 H262"/></circle>
-              <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M262 168 H150"/></circle>
+    <!-- ============================ ecosystem ============================ -->
+    <section id="ecosystem" class="section dark">
+      <div class="wrap split" data-reveal>
+        <div class="split-copy">
+          <p class="kicker">The Sovereign Ecosystem</p>
+          <h2>One handle. Every device.</h2>
+          <p class="body-lg">Bind your hardware to a Global Handle like <code>@alex</code>. Once each device is authenticated with your authenticator app and Ecosystem PIN, they form an invisible, high-speed matrix — every drive one click away from every other.</p>
+          <ul class="split-list">
+            <li>
+              <h4>Universal access</h4>
+              <p>Click any device that's online to mount its vault instantly. No uploads, no sync folder, no waiting.</p>
+            </li>
+            <li>
+              <h4>Unified presence</h4>
+              <p>A file on your desktop at home opens on your laptop across the world — same mesh, zero configuration.</p>
+            </li>
+            <li>
+              <h4>No public IP required</h4>
+              <p>Nothing is exposed to the internet. Your devices dial out to each other instead of waiting to be found.</p>
+            </li>
+          </ul>
+        </div>
+        <div class="split-visual">
+          <svg viewBox="0 0 460 340" role="img" aria-label="Four devices — MacBook Pro, Desk PC, Studio Mac and Home Server — linked through a single global handle, @alex">
+            <g style="stroke:var(--accent);stroke-width:2;opacity:.45">
+              <path d="M230 170 105 58"/><path d="M230 170 355 58"/>
+              <path d="M230 170 105 282"/><path d="M230 170 355 282"/>
             </g>
-
-            <!-- your ecosystem -->
-            <text class="d-sub" x="381" y="30" text-anchor="middle">your ecosystem</text>
-
-            <rect class="d-node" x="300" y="60" width="162" height="48" rx="12"/>
-            <text class="d-title" x="316" y="80">Home server</text>
-            <text class="d-sub d-code" x="316" y="98">localhost:3000</text>
-
-            <rect class="d-node" x="300" y="116" width="162" height="48" rx="12"/>
-            <text class="d-title" x="316" y="136">Desk PC</text>
-            <text class="d-sub" x="316" y="154">4 TB drive</text>
-
-            <rect class="d-node" x="300" y="172" width="162" height="48" rx="12"/>
-            <text class="d-title" x="316" y="192">Phone</text>
-            <text class="d-sub" x="316" y="210">camera · mic</text>
-
-            <rect class="d-node" x="300" y="228" width="162" height="48" rx="12"/>
-            <text class="d-title" x="316" y="248">Studio Mac</text>
-            <text class="d-sub" x="316" y="266">speakers</text>
-
-            <!-- this device -->
-            <rect class="d-node" x="18" y="124" width="132" height="88" rx="14"/>
-            <g class="d-icon" transform="translate(36 142)">
-              <rect x="2" y="0" width="20" height="13" rx="2"/><path d="M-1 17h26"/>
+            <g style="fill:var(--surface);stroke:var(--line);stroke-width:1.2">
+              <rect x="30" y="30" width="150" height="56" rx="14"/>
+              <rect x="280" y="30" width="150" height="56" rx="14"/>
+              <rect x="30" y="254" width="150" height="56" rx="14"/>
+              <rect x="280" y="254" width="150" height="56" rx="14"/>
             </g>
-            <text class="d-title" x="36" y="184">This laptop</text>
-            <circle class="d-dot" cx="40" cy="199" r="3.5"/>
-            <text class="d-sub" x="49" y="203">any network</text>
+            <g style="fill:var(--text);font-size:15px;font-weight:600">
+              <text x="48" y="55">MacBook Pro</text>
+              <text x="298" y="55">Desk PC</text>
+              <text x="48" y="279">Studio Mac</text>
+              <text x="298" y="279">Home Server</text>
+            </g>
+            <g style="fill:var(--muted);font-size:12px">
+              <text x="48" y="73">this device</text>
+              <text x="298" y="73">online · mounted</text>
+              <text x="48" y="297">online</text>
+              <text x="298" y="297">online</text>
+            </g>
+            <circle cx="230" cy="170" r="54" style="fill:var(--surface);stroke:var(--accent);stroke-width:2"/>
+            <text x="230" y="177" text-anchor="middle" style="fill:var(--accent);font-size:21px;font-weight:600">@alex</text>
           </svg>
-          <figcaption>Your devices negotiate their own way through NAT and firewalls and hold one encrypted tunnel open between them, so a drive, a local port or a piece of hardware is reachable without exposing anything to the internet.</figcaption>
-        </figure>
+        </div>
       </div>
     </section>
 
-    <section id="features" class="section">
-      <div class="wrap">
-        <header class="section-head">
-          <p class="kicker">What you can reach</p>
-          <h2>If it runs on one of your devices, it's already hosted.</h2>
-          <p>Pair once. From then on every drive, service and device in your ecosystem behaves like it's plugged into the machine in front of you.</p>
-        </header>
+    <!-- ============================ peers ============================ -->
+    <section id="peers" class="section">
+      <div class="wrap split reverse" data-reveal>
+        <div class="split-copy">
+          <p class="kicker">Direct Peer Matrix</p>
+          <h2>Send a file without giving it away.</h2>
+          <p class="body-lg">Search a colleague's Global Handle, forge a permanent encrypted tunnel, and talk. When you attach a file, nothing is uploaded — Enidor opens a Micro-Room: a private tunnel to that exact file, still sitting on your drive.</p>
+          <ul class="split-list">
+            <li>
+              <h4>Granular time-to-live</h4>
+              <p>Grant access for 1 hour, 24 hours, 7 days — or never expire. You choose at the moment you send.</p>
+            </li>
+            <li>
+              <h4>Instant revocation</h4>
+              <p>Click Revoke and the tunnel is severed and the file locked, even mid-download on their end.</p>
+            </li>
+            <li>
+              <h4>Messages nobody else holds</h4>
+              <p>Chat runs on the same point-to-point infrastructure as your files. There's no inbox on a server to subpoena, breach or mine.</p>
+            </li>
+          </ul>
+        </div>
+        <div class="split-visual">
+          <div class="panel chat" aria-hidden="true">
+            <div class="chat-head">
+              <span class="avatar">M</span>
+              <span><span class="who">@maya</span><br><span class="mock-crumbs">tunnel forged · encrypted</span></span>
+              <span class="state"><span class="dot"></span>online</span>
+            </div>
+            <p class="bubble">Can you send the master before the review?</p>
+            <p class="bubble me">Sending now — 24h access.</p>
+            <div class="attach">
+              <div class="row">
+                <span class="glyph accent"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg></span>
+                <span>
+                  <span class="name">Master_v9.wav</span><br>
+                  <span class="sub">486 MB · streams from your drive</span>
+                </span>
+              </div>
+              <div class="chips">
+                <span class="chip live">● Live tunnel</span>
+                <span class="chip">Expires in 23h 41m</span>
+                <span class="chip danger">Revoke access</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <div class="features">
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3.2a15 15 0 0 1 0 17.6M12 3.2a15 15 0 0 0 0 17.6"/><path d="m5.5 18.5 13-13"/></svg></span>
-            <h3>No public IP. None needed.</h3>
-            <p>No port forwarding, no static IP, no dynamic DNS, no VPN server to babysit. Devices find each other and hold the tunnel open themselves.</p>
+    <!-- ============================ sharing ============================ -->
+    <section id="sharing" class="section alt">
+      <div class="wrap">
+        <div class="section-head center" data-reveal>
+          <p class="kicker">Sharing</p>
+          <h2>Two ways to let someone in. Both temporary.</h2>
+          <p>Not everyone belongs in your permanent address book. Enidor gives you throughput without a relationship, and rooms that evaporate the moment you close them.</p>
+        </div>
+        <div class="cards" data-reveal>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
+            <h3>Pulse Drop</h3>
+            <p>Beam massive files straight to someone you've never linked with. They get a prompt, they accept, and the transfer runs at full network speed — ephemeral, direct, nothing left behind.</p>
           </article>
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span>
-            <h3>Storage, wherever it lives</h3>
-            <p>Mount a paired device and browse its drive. Internal disks, an external SSD, a NAS folder or a project directory — all of it, without copying anything anywhere first.</p>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20v.01M18 18v3h3v-3z"/></svg></span>
+            <h3>Guest Rooms</h3>
+            <p>Host up to five local folders at once behind ephemeral 6-digit codes. Hand the code to a group, they dock into exactly those folders, and access evaporates when you close the room.</p>
+            <div class="code-tiles" style="margin-top:22px"><span>4</span><span>8</span><span>2</span><span>9</span><span>1</span><span>3</span></div>
           </article>
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M7 12.5l2 2-2 2M12.5 16.5H17"/></svg></span>
-            <h3>Locally running services</h3>
-            <p>A dev server on <code>:3000</code>, a media library, a home dashboard, a database, a model running on the desktop GPU. Reach a local port from another device as if it were local there too.</p>
-          </article>
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2v5M15 2v5M6 7h12v3.5a6 6 0 0 1-12 0zM12 16.5V22"/></svg></span>
-            <h3>Hardware from your ecosystem</h3>
-            <p>Your phone's camera and mic, the speakers on the machine in the next room, a scanner, a board on a workbench Pi. Devices you own become devices any of your devices can use.</p>
-          </article>
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
-            <h3>Peer-to-peer, end to end</h3>
-            <p>Our own transport punches through NAT and firewalls and connects the two devices directly, so your network is the only speed limit. Nothing is staged, queued or copied in between.</p>
-          </article>
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></span>
-            <h3>Stream instead of transfer</h3>
-            <p>Video, audio and images play straight from the host over the tunnel, full screen included. Downloading is a choice, not a prerequisite.</p>
-          </article>
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17M3 21h18"/><path d="M14.5 12h.01"/></svg></span>
-            <h3>Let someone else in, briefly</h3>
-            <p>Hand out a 6-digit room code to give a guest exactly what you picked — up to five at a time. Revoke it with one click, or by quitting the app.</p>
-          </article>
-          <article class="feature">
-            <span class="feature-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-4M4 4v3.5h3.5M4 13a8 8 0 0 0 14.9 4M20 20v-3.5h-3.5"/></svg></span>
-            <h3>Updates itself</h3>
-            <p>New versions download in the background and install themselves. You only ever download Enidor once per device.</p>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></span>
+            <h3>Universal streaming</h3>
+            <p>Why wait for a 10 GB download? A custom on-the-fly streaming engine plays video, high-fidelity audio and raw images straight from the host's drive — in Enidor's previewer or handed off to VLC or IINA.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <section id="security" class="section band">
-      <div class="wrap security-grid">
-        <header class="section-head">
-          <p class="kicker">Security &amp; privacy</p>
-          <h2>There’s no door to knock on.</h2>
-          <p>The usual way to host something at home is to open a hole in your router and hope nobody finds it. Enidor doesn't open one at all — there's no public address to scan, and nothing in the middle to read what passes through.</p>
-        </header>
-        <ul class="security-list">
-          <li>
-            <h3>Nothing is exposed to the internet</h3>
-            <p>No open ports, no public hostname, no listener anyone can reach. Your devices dial out to each other instead of waiting to be found.</p>
-          </li>
-          <li>
-            <h3>Paired devices only</h3>
-            <p>Every connection starts with an Ed25519 cryptographic handshake. Only devices you explicitly paired can open a tunnel or ask for anything through it.</p>
-          </li>
-          <li>
-            <h3>Mutual revocation</h3>
-            <p>Lost a device? Unpair it and the tunnel closes immediately. Trust is deleted on both ends and access is gone for good.</p>
-          </li>
-          <li>
-            <h3>No middleman, by design</h3>
-            <p>There is no server in the path holding your traffic, and no third party to trust with it. Devices talk to each other and to nothing else.</p>
-          </li>
-          <li>
-            <h3>Strictly scoped access</h3>
-            <p>Only what you publish is reachable — the folders you mount, the ports you expose, the hardware you allow. The rest of the machine stays untouched.</p>
-          </li>
-        </ul>
+    <!-- ============================ control ============================ -->
+    <section id="control" class="section dark">
+      <div class="wrap split" data-reveal>
+        <div class="split-copy">
+          <p class="kicker">Command &amp; Control</p>
+          <h2>See every byte.</h2>
+          <p class="body-lg">Sovereignty needs visibility. The Activity Monitor shows every byte entering or leaving your machine in real time — live pipelines with bandwidth and progress, and an audit log of exactly who touched what.</p>
+          <ul class="split-list">
+            <li>
+              <h4>Live pipelines</h4>
+              <p>Watch guest transfers and ecosystem syncs as they happen, with per-connection speed and progress.</p>
+            </li>
+            <li>
+              <h4>Audit logs</h4>
+              <p>Who connected, which file they opened, and whether they streamed it or took a copy.</p>
+            </li>
+          </ul>
+        </div>
+        <div class="split-visual">
+          <div class="panel" aria-hidden="true">
+            <div class="gauges">
+              <div class="gauge">
+                <div class="row"><span class="name">@maya · Master_v9.wav</span><span class="val">↑ 214 MB/s</span></div>
+                <div class="meter"><span style="width:74%"></span></div>
+              </div>
+              <div class="gauge alt">
+                <div class="row"><span class="name">Room 482 913 · /Deliverables</span><span class="val">↑ 61 MB/s</span></div>
+                <div class="meter"><span style="width:38%"></span></div>
+              </div>
+              <div class="gauge">
+                <div class="row"><span class="name">Desk PC · vault sync</span><span class="val">↓ 402 MB/s</span></div>
+                <div class="meter"><span style="width:92%"></span></div>
+              </div>
+            </div>
+            <ul class="log">
+              <li><time>14:02</time><span class="who">@maya</span> streamed Master_v9.wav <span class="tag" style="color:var(--ok)">preview</span></li>
+              <li><time>13:47</time><span class="who">Guest · 482 913</span> downloaded brief.pdf <span class="tag">copy</span></li>
+              <li><time>13:31</time><span class="who">@sam</span> access revoked <span class="tag" style="color:var(--danger)">closed</span></li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="start" class="section">
+    <!-- ============================ security ============================ -->
+    <section id="security" class="section">
       <div class="wrap">
-        <header class="section-head">
+        <div class="section-head center" data-reveal>
+          <p class="kicker">Security &amp; privacy</p>
+          <h2>There's no door to knock on.</h2>
+          <p>The usual way to host something is to open a hole in your router and hope nobody finds it. Enidor doesn't open one at all — and nothing in the path can read what passes through.</p>
+        </div>
+        <div class="cards cards-2" data-reveal>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <h3>Zero-knowledge architecture</h3>
+            <p>We cannot see your files or read your messages. There is no cloud storage, no third-party database — data moves strictly from point A to point B through encrypted, direct tunnels.</p>
+          </article>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14.5v2.5"/></svg></span>
+            <h3>MFA and a cryptographic PIN</h3>
+            <p>Your identity is held by an authenticator app (TOTP) plus a local Ecosystem PIN. Without the PIN, the vault on that machine stays cryptographically scrambled.</p>
+          </article>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.6 6.6a8 8 0 1 0 10.8 0"/></svg></span>
+            <h3>Emergency kill switch</h3>
+            <p>Under threat? One click in the Security Center drops every inbound and outbound tunnel across all zones, severing the machine from the outside world.</p>
+          </article>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M9 4.5A7.5 7.5 0 0 1 19.5 15M4.5 9A7.5 7.5 0 0 0 15 19.5"/></svg></span>
+            <h3>Revocation that's already done</h3>
+            <p>Unlink a device or revoke a Micro-Room and the tunnel closes immediately — active downloads fail, trust is deleted on both ends, access is gone for good.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ get started ============================ -->
+    <section id="start" class="section alt">
+      <div class="wrap">
+        <div class="section-head center" data-reveal>
           <p class="kicker">Get started</p>
-          <h2>Up and running in four steps.</h2>
-        </header>
-        <ol class="steps">
+          <h2>Six steps to your own mesh.</h2>
+          <p>Install, claim your handle, and add devices. Nothing to configure on your router, and nothing to pay for.</p>
+        </div>
+        <ol class="steps" data-reveal>
           <li>
-            <span class="step-num">01</span>
-            <h3>Install</h3>
-            <p>Get the build for your computer from the <a href="#releases">releases below</a>, and install it on every device you want in your mesh.</p>
+            <span class="step-num">STEP 01</span>
+            <h3>The genesis node</h3>
+            <p>Launch Enidor on your main computer, claim your <strong>Global Handle</strong>, scan the QR code with your authenticator app, save your recovery codes, and set the <strong>Ecosystem PIN</strong> that decrypts your local vault.</p>
           </li>
           <li>
-            <span class="step-num">02</span>
-            <h3>Pair your devices</h3>
-            <p>On the first device, click the phone icon in the sidebar to show a QR code. On the second, click <strong>+</strong> and scan it. Name the device and the mesh exists.</p>
+            <span class="step-num">STEP 02</span>
+            <h3>Expand the mesh</h3>
+            <p>Install Enidor on a second machine, sign in with your handle, confirm with your authenticator and PIN. Open <strong>My Ecosystem</strong> and both devices are there, ready to browse.</p>
           </li>
           <li>
-            <span class="step-num">03</span>
-            <h3>Publish what you want to reach</h3>
-            <p>Under <strong>Mounted Vault Folders</strong>, click <strong>+</strong> to add a folder, a drive or a whole project. Paired devices can open it right away.</p>
+            <span class="step-num">STEP 03</span>
+            <h3>Forge peer links</h3>
+            <p>In <strong>My Peers</strong>, search a colleague's handle and hit <strong>Forge Link</strong>. Once they accept, a permanent encrypted chat tunnel exists between you.</p>
           </li>
           <li>
-            <span class="step-num">04</span>
-            <h3>Open it from anywhere</h3>
-            <p>Click any paired device that's online and it's just there. To bring in someone outside your mesh, click <strong>+ Share New Folder</strong> and send them the 6-digit code.</p>
+            <span class="step-num">STEP 04</span>
+            <h3>Attach, with an expiry</h3>
+            <p>Open a chat, click the paperclip, and pick how long they get access. Change your mind at any point and hit <strong>Revoke Access</strong> on the message.</p>
+          </li>
+          <li>
+            <span class="step-num">STEP 05</span>
+            <h3>Pulse Drop a stranger</h3>
+            <p>Look up a handle you don't want to keep, choose <strong>Pulse Drop</strong> instead of a link, and send. They accept the prompt and the file moves at full speed.</p>
+          </li>
+          <li>
+            <span class="step-num">STEP 06</span>
+            <h3>Stay in control</h3>
+            <p>The shield icon opens <strong>Security &amp; Settings</strong>: active sessions, themes, the kill switch, and <strong>Logout &amp; Unlink</strong> to erase the vault keys from that hardware.</p>
           </li>
         </ol>
       </div>
     </section>
 
+    <!-- ============================ platforms ============================ -->
+    <section class="section-tight">
+      <div class="wrap">
+        <div class="section-head center" data-reveal>
+          <h2>Built for the machines you use.</h2>
+        </div>
+        <ul class="platforms" data-reveal>
+          <li class="platform">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg>
+            <p class="name">macOS</p>
+            <p class="sub">Apple Silicon &amp; Intel</p>
+          </li>
+          <li class="platform">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 17v3M8 20h8M14 17v3"/></svg>
+            <p class="name">Windows</p>
+            <p class="sub">10 &amp; 11, 64-bit</p>
+          </li>
+          <li class="platform soon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M7 12l2.2 2.2L7 16.4M12.5 16.4H17"/></svg>
+            <p class="name">Linux</p>
+            <p class="sub">Coming soon</p>
+          </li>
+          <li class="platform soon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="8" width="14" height="12" rx="3"/><path d="m8 8-1.6-3M16 8l1.6-3M9.5 13h.01M14.5 13h.01"/></svg>
+            <p class="name">Android</p>
+            <p class="sub">Coming soon</p>
+          </li>
+          <li class="platform soon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/></svg>
+            <p class="name">iOS</p>
+            <p class="sub">Coming soon</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================ download ============================ -->
+    <section class="band dark">
+      <div class="wrap" data-reveal>
+        <h2>Take your data back.</h2>
+        <p class="lede">Install Enidor on two machines and your private mesh exists. It takes about three minutes, and it costs nothing.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#releases">Download Enidor</a>
+          <a class="btn btn-secondary" href="https://github.com/hermesnetdev/From_project_1_releases/releases">All releases</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ releases ============================ -->
     <section id="releases" class="section">
       <div class="wrap">
-        <header class="section-head">
+        <div class="section-head center" data-reveal>
           <p class="kicker">Releases</p>
-          <h2>Download Enidor</h2>
-          <p>Builds are published on <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">GitHub Releases</a> and listed here as soon as they go out. Once installed, Enidor keeps itself up to date.</p>
-        </header>
+          <h2>Get the latest build.</h2>
+          <p>Builds are published on <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">GitHub Releases</a> and appear here the moment they go out. Once installed, Enidor keeps itself up to date in the background.</p>
+        </div>
 
         <div id="releases-root" class="releases" aria-live="polite">
           <p class="status">Loading releases…</p>
@@ -241,7 +463,7 @@
         </noscript>
 
         <aside class="note">
-          <strong>Early access.</strong> The mesh works today for storage and streaming between paired devices; local services and hardware are landing as we go. Found a bug or want a feature? <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Open an issue</a>.
+          <strong>Early access.</strong> The mesh, peer tunnels, guest rooms and streaming engine work today; we're iterating fast, so expect the occasional rough edge. Found a bug or want a feature? <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Open an issue</a>.
         </aside>
       </div>
     </section>
@@ -255,6 +477,7 @@
         <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">All releases</a>
         <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Report an issue</a>
       </nav>
+      <p class="footer-note">Enidor — built with performance, privacy and absolute autonomy in mind.</p>
     </div>
   </footer>
 </body>
