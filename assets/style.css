@@ -546,6 +546,11 @@ h2 {
   line-height: 1.55;
 }
 
+.feature code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+
 /* ---------- security band ---------- */
 
 .band {
