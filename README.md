@@ -11,6 +11,10 @@ stack, so nothing is fetched at runtime):
   both themes via the `.dark` class
 - `assets/app.js`: loads releases live from [hermesnetdev/From_project_1_releases](https://github.com/hermesnetdev/From_project_1_releases/releases)
 - `assets/ui.js`: reveal-on-scroll for sections marked `data-reveal`
+- `assets/appicon.png`: the app icon — favicon, Apple touch icon, Open Graph image, and the
+  tile in the download band
+- `assets/mark.png`: the same mark cropped tight on transparency, used as the header logo and
+  inverted by CSS in dark mode
 - `.nojekyll`: tells GitHub Pages to serve the files as-is
 
 ## Product shots

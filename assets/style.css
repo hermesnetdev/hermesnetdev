@@ -346,9 +346,26 @@ code {
 }
 
 .brand-mark {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+/* the mark is black artwork on transparency — flip it when the page goes dark */
+@media (prefers-color-scheme: dark) {
+  .brand-mark {
+    filter: invert(1);
+  }
+}
+
+.app-icon {
+  display: block;
+  width: clamp(76px, 9vw, 96px);
+  height: auto;
+  margin: 0 auto clamp(24px, 3vw, 34px);
+  border-radius: 23%;
+  background: #fff;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
 }
 
 .nav {

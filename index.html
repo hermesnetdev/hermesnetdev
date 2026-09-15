@@ -10,7 +10,10 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Enidor — The cloud you already own">
   <meta property="og:description" content="The sovereign private mesh. Your devices become the servers: zero-trust, end-to-end encrypted, no cloud in the middle.">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/appicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/appicon.png">
+  <meta property="og:image" content="https://hermesnetdev.github.io/hermesnetdev/assets/appicon.png">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js" defer></script>
   <script src="assets/ui.js" defer></script>
@@ -21,10 +24,7 @@
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="./" aria-label="Enidor home">
-        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-          <path d="M9 22 16 9l7 13z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          <circle cx="16" cy="9" r="3.5"/><circle cx="9" cy="22" r="3.5"/><circle cx="23" cy="22" r="3.5"/>
-        </svg>
+        <img class="brand-mark" src="assets/mark.png" alt="" width="295" height="295">
         <span>Enidor</span>
       </a>
       <nav class="nav" aria-label="Primary">
@@ -437,6 +437,7 @@
     <!-- ============================ download ============================ -->
     <section class="band dark">
       <div class="wrap" data-reveal>
+        <img class="app-icon" src="assets/appicon.png" alt="The Enidor app icon" width="380" height="380">
         <h2>Take your data back.</h2>
         <p class="lede">Install Enidor on two machines and your private mesh exists. It takes about three minutes, and it costs nothing.</p>
         <div class="cta">
