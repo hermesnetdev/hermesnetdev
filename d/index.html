@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shared with you · Enidor</title>
+  <meta name="description" content="Someone shared files with you on Enidor. Download them in your browser, straight from their computer, encrypted end to end.">
+  <!-- every share link is a different room; none of them belong in search results -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+  <!-- link previews for shared links -->
+  <meta property="og:site_name" content="Enidor">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hermesnetdev.github.io/hermesnetdev/d/">
+  <meta property="og:title" content="Files shared with you on Enidor">
+  <meta property="og:description" content="Download them in your browser, straight from the sender’s computer — encrypted end to end, never uploaded to a cloud.">
+  <meta property="og:image" content="https://hermesnetdev.github.io/hermesnetdev/assets/og.jpg">
+  <meta property="og:image:secure_url" content="https://hermesnetdev.github.io/hermesnetdev/assets/og.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="1260">
+  <meta property="og:image:alt" content="Enidor — the cloud you already own.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Files shared with you on Enidor">
+  <meta name="twitter:description" content="Download them in your browser, straight from the sender’s computer — encrypted end to end.">
+  <meta name="twitter:image" content="https://hermesnetdev.github.io/hermesnetdev/assets/og.jpg">
+
+  <link rel="icon" href="../assets/appicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/appicon.png">
+
+  <!--
+    Where the page finds sharers. Both must be reachable from an https page:
+      signal  the room directory, https with CORS — GET {signal}/{code} returns the sharer's multiaddr
+      relays  the relay's browser-dialable multiaddrs (wss or webtransport), each ending in /p2p/<relay id>
+    Leave either empty and the page tells visitors to open the code in the app instead.
+    See "Receive page" in the README.
+  -->
+  <script type="application/json" id="enidor-config">
+  {
+    "signal": "",
+    "relays": []
+  }
+  </script>
+
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="../assets/receive.css">
+  <link rel="modulepreload" href="../assets/vendor/libp2p.js">
+  <script src="../assets/app.js" defer></script>
+  <script type="module" src="../assets/receive.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main" data-scroll="main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../" aria-label="Enidor home">
+        <img class="brand-mark" src="../assets/mark.png" alt="" width="295" height="295">
+        <span>Enidor</span>
+      </a>
+      <a class="btn btn-primary btn-small rx-header-cta" href="../#releases" data-scroll="get-enidor">Get the app</a>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ============================ the download ============================ -->
+    <section class="rx-hero">
+      <div class="wrap">
+        <p class="eyebrow" id="rx-kicker">Enidor</p>
+        <h1 class="rx-title" id="rx-title">Someone shared files with you.</h1>
+        <div class="code-tiles rx-code" id="rx-code" role="img" hidden></div>
+        <p class="rx-lede" id="rx-lede">They come straight from the sender’s computer, encrypted end to end. Nothing is uploaded to a cloud.</p>
+
+        <div class="rx-card" id="rx-card" aria-live="polite">
+          <div class="rx-status">
+            <span class="rx-spinner" aria-hidden="true"></span>
+            <p class="rx-status-text">Loading…</p>
+          </div>
+          <noscript>
+            <p class="rx-card-body">Downloading in the browser needs JavaScript. You can also open the code in the <a href="../#releases">Enidor app</a>.</p>
+          </noscript>
+        </div>
+
+        <ul class="rx-trust" aria-label="How this download works">
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            Encrypted end to end
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+            Peer to peer, from their drive
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z"/></svg>
+            No account needed
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================ get the app ============================ -->
+    <section id="get-enidor" class="section dark rx-promo">
+      <div class="wrap">
+        <div class="section-head center">
+          <p class="kicker">Get the full experience</p>
+          <h2>The browser gets you the file. The app gets you everything.</h2>
+          <p>Enidor links your computers into one private, encrypted mesh. Stream from any of them, share folders behind a code like this one, and send files you can take back.</p>
+        </div>
+
+        <div class="rx-compare-wrap">
+          <table class="rx-compare">
+            <thead>
+              <tr>
+                <th scope="col"><span class="visually-hidden">Feature</span></th>
+                <th scope="col">Browser</th>
+                <th scope="col" class="is-app">Enidor app</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Download from a room code</th>
+                <td><span class="yes" aria-label="Yes">✓</span></td>
+                <td class="is-app"><span class="yes" aria-label="Yes">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">File size</th>
+                <td>Up to what your browser can hold</td>
+                <td class="is-app">Any size, straight to disk</td>
+              </tr>
+              <tr>
+                <th scope="row">Resume after closing</th>
+                <td><span class="no" aria-label="No">—</span></td>
+                <td class="is-app"><span class="yes" aria-label="Yes">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Stream video and audio without downloading</th>
+                <td><span class="no" aria-label="No">—</span></td>
+                <td class="is-app"><span class="yes" aria-label="Yes">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Share your own folders</th>
+                <td><span class="no" aria-label="No">—</span></td>
+                <td class="is-app"><span class="yes" aria-label="Yes">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Encrypted chat and revocable files</th>
+                <td><span class="no" aria-label="No">—</span></td>
+                <td class="is-app"><span class="yes" aria-label="Yes">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Link every computer you own</th>
+                <td><span class="no" aria-label="No">—</span></td>
+                <td class="is-app"><span class="yes" aria-label="Yes">✓</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- app.js fills these in from the latest release and puts the visitor's platform first -->
+        <div class="cta" id="download">
+          <a class="btn btn-primary" data-platform="mac" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+            <span>Download for macOS</span>
+          </a>
+          <a class="btn btn-secondary" data-platform="windows" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+            <span>Download for Windows</span>
+          </a>
+        </div>
+        <p class="cta-meta" id="cta-meta">Free · macOS (Apple Silicon &amp; Intel) · Windows 10 &amp; 11 (64-bit)</p>
+        <p class="rx-more"><a class="link-arrow" href="../">See everything Enidor does</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>© <span id="year">2026</span> hermesnetdev</p>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="../">Enidor</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">All releases</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Report an issue</a>
+      </nav>
+      <p class="footer-note">Files on this page come from the sender’s computer. hermesnetdev never stores them and can’t read them.</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "enidor-libp2p-bundle",
+  "private": true,
+  "description": "Builds assets/vendor/libp2p.js, the browser libp2p client used by the receive page (d/).",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild entry.js --bundle --format=esm --minify --target=es2022 --platform=browser --legal-comments=eof --outfile=../../assets/vendor/libp2p.js"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "17.0.0",
+    "@chainsafe/libp2p-yamux": "8.0.1",
+    "@libp2p/circuit-relay-v2": "4.2.13",
+    "@libp2p/identify": "4.1.14",
+    "@libp2p/webrtc": "6.0.32",
+    "@libp2p/websockets": "10.1.21",
+    "@libp2p/webtransport": "6.0.39",
+    "@multiformats/multiaddr": "13.0.3",
+    "libp2p": "3.3.11"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

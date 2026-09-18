@@ -1,0 +1,491 @@
+/* ==========================================================================
+   Receive page (d/) — builds on the tokens and components in style.css
+   ========================================================================== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* buttons are also <button>s here */
+.btn {
+  font-family: inherit;
+  background: transparent;
+}
+
+.btn-primary {
+  background: var(--accent);
+}
+
+.btn-ghost {
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-2);
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.rx-header-cta {
+  margin-left: auto;
+}
+
+/* ---------- hero ---------- */
+
+.rx-hero {
+  padding-top: clamp(48px, 7vw, 88px);
+  padding-bottom: clamp(56px, 8vw, 96px);
+  text-align: center;
+}
+
+.rx-title {
+  max-width: 18ch;
+  margin-inline: auto;
+  font-size: clamp(2.25rem, 5.4vw, 3.75rem);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.rx-code {
+  margin-top: 26px;
+}
+
+.rx-code[hidden] {
+  display: none;
+}
+
+.rx-lede {
+  max-width: 34rem;
+  margin: 22px auto 0;
+  color: var(--muted);
+  font-size: clamp(1.0625rem, 1.8vw, 1.25rem);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+/* ---------- the card that holds every state ---------- */
+
+.rx-card {
+  max-width: 680px;
+  margin: clamp(32px, 4vw, 44px) auto 0;
+  padding: clamp(20px, 3.4vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.rx-card-title {
+  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.rx-card-body {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.rx-card-body strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rx-note {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.rx-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.rx-mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.rx-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.glyph.rx-big {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
+.glyph.rx-big svg {
+  width: 24px;
+  height: 24px;
+}
+
+.glyph.ok {
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
+  color: var(--ok);
+}
+
+/* loading */
+
+.rx-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+}
+
+.rx-status-text {
+  font-weight: 600;
+}
+
+.rx-status .rx-note {
+  margin-top: 2px;
+}
+
+.rx-spinner {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: rx-spin 0.9s linear infinite;
+}
+
+@keyframes rx-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rx-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* messages and the single-file view */
+
+.rx-message,
+.rx-single {
+  text-align: center;
+}
+
+.rx-message .glyph.rx-big,
+.rx-single .glyph.rx-big {
+  margin-inline: auto;
+}
+
+.rx-message .rx-actions,
+.rx-single .rx-actions {
+  justify-content: center;
+}
+
+.rx-message .rx-card-body,
+.rx-single .rx-card-body {
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+.rx-steps {
+  max-width: 24rem;
+  margin: 18px auto 0;
+  padding-left: 1.4em;
+  color: var(--muted);
+  text-align: left;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.rx-steps li + li {
+  margin-top: 6px;
+}
+
+.rx-steps strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* folder browser */
+
+.rx-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.9375rem;
+}
+
+.rx-crumb {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.rx-crumb:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.rx-crumb:disabled {
+  color: var(--text);
+  font-weight: 600;
+  cursor: default;
+}
+
+.rx-crumb-sep {
+  color: var(--muted);
+}
+
+.rx-files {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rx-files li + li {
+  border-top: 1px solid var(--line-soft);
+}
+
+.rx-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 6px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9375rem;
+  text-align: left;
+}
+
+button.rx-row {
+  cursor: pointer;
+}
+
+button.rx-row:hover {
+  background: var(--surface-2);
+}
+
+.rx-row .rx-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rx-size {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.rx-chevron {
+  width: 22px;
+  height: 22px;
+  background: none;
+}
+
+.rx-empty {
+  padding: 28px 0 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* file rows put size and button on a second line; folder rows stay on one */
+@media (max-width: 520px) {
+  div.rx-row {
+    flex-wrap: wrap;
+  }
+
+  div.rx-row .rx-name {
+    flex-basis: calc(100% - 50px);
+  }
+
+  div.rx-row .rx-size {
+    margin-left: 42px;
+  }
+
+  div.rx-row .btn {
+    margin-left: auto;
+  }
+}
+
+/* progress */
+
+.rx-progress-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.rx-progress .meter {
+  height: 8px;
+  margin-top: 20px;
+}
+
+.rx-progress .meter span {
+  transition: width 0.25s linear;
+}
+
+.rx-stats {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rx-nudge {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* ---------- reassurance row under the card ---------- */
+
+.rx-trust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 28px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.rx-trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rx-trust svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- promo ---------- */
+
+.rx-promo .section-head h2 {
+  max-width: 20ch;
+  margin-inline: auto;
+}
+
+.rx-compare-wrap {
+  max-width: 760px;
+  margin: clamp(36px, 4vw, 52px) auto 0;
+  overflow-x: auto;
+}
+
+.rx-compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.rx-compare th,
+.rx-compare td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.rx-compare thead th {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rx-compare thead th.is-app {
+  color: var(--accent);
+}
+
+.rx-compare tbody th {
+  font-weight: 500;
+}
+
+.rx-compare td {
+  width: 28%;
+  color: var(--muted);
+}
+
+.rx-compare td.is-app {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--text);
+}
+
+.rx-compare .yes {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.rx-compare .no {
+  opacity: 0.6;
+}
+
+@media (max-width: 560px) {
+  .rx-compare th,
+  .rx-compare td {
+    padding: 12px 8px;
+  }
+
+  .rx-compare {
+    font-size: 0.875rem;
+  }
+}
+
+.rx-promo .cta {
+  margin-top: clamp(36px, 4vw, 48px);
+}
+
+.rx-promo .cta-meta {
+  text-align: center;
+}
+
+.rx-more {
+  margin-top: 22px;
+  text-align: center;
+}
