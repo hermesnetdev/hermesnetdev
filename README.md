@@ -127,7 +127,7 @@ The `enidor-config` block in `d/index.html`:
 ```json
 {
   "signal": "https://relay.example.com/room",
-  "relays": ["/dns4/relay.example.com/tcp/443/wss/p2p/12D3KooWEZUMscyV6TxiQcVXsRi2sQusYd8fyjW4FtFyAnQqWjg9"]
+  "relays": ["/dns4/relay.example.com/tcp/443/wss/p2p/12D3KooWECv999C2QCGZ34TN2bWMDmMoKERL8EUDcEDud24u6eJ2"]
 }
 ```
 
@@ -137,7 +137,16 @@ empty**, because the current servers can't be reached from a browser yet:
 
 ### What the servers need first
 
-These were checked against the live relay (`148.113.58.51`) on 2026-09-18.
+Checked against the live server (`148.113.58.51`) on 2026-09-28. The signaling server already
+does its part: it sends CORS headers for `https://hermesnetdev.github.io`, requires the
+`X-Enidor-Auth` header, and has endpoints for a WebRTC handshake
+(`POST /room/{code}/offer`, `GET /room/{code}/offers`, `POST|GET /room/{code}/answer`).
+
+The relay's peer ID is now `12D3KooWECv999C2QCGZ34TN2bWMDmMoKERL8EUDcEDud24u6eJ2`. It changes
+on every restart unless the relay saves its key, and an app built against an old one can't reach
+the mesh at all.
+
+Two things are still missing, and either one on its own makes the page work:
 
 1. **A transport browsers can dial.** The relay listens only on raw TCP and QUIC
    (`/tcp/4001`, `/udp/4001/quic-v1`), and browsers can open neither. Add a WebSocket
@@ -154,12 +163,18 @@ These were checked against the live relay (`148.113.58.51`) on 2026-09-18.
    WebTransport (`/udp/…/quic-v1/webtransport`) needs no domain and the bundle supports it. But
    its certificate hash rotates, so its address can't be hard-coded here.
 
-2. **The room directory over HTTPS, with CORS.** It's served over plain `http://…:4002`,
-   which an https page isn't allowed to call, and it sends no `Access-Control-Allow-Origin`.
-   The header has to be on 404s too, or the page can't tell "no such code" from "network
-   down".
+   With this, the page connects the way it does today: the relay carries a WebRTC handshake,
+   then the browser and the app hole-punch to a direct connection.
 
-One reverse proxy covers both. With Caddy, which fetches the certificate itself:
+2. **Or a WebRTC handshake over the signaling endpoints**, which already exist. The browser
+   posts its offer, the app polls for it and posts an answer, and the two connect directly.
+   The relay then isn't involved in browser downloads at all. This needs the app to answer
+   those offers, and the page to use them instead of libp2p.
+
+Either way, **`:4002` has to be reachable over HTTPS**, because a page on `https://` may not
+call `http://`. That needs a domain: certificates aren't issued for bare IP addresses. The
+relay can fetch its own certificate with `golang.org/x/crypto/acme/autocert`, or sit behind
+Caddy:
 
 ```
 relay.example.com {
