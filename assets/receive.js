@@ -149,9 +149,9 @@ function readCode() {
     // leave it as typed
   }
   const params = new URLSearchParams(location.search);
-  for (const raw of [hash, params.get('c'), params.get('code')]) {
-    const digits = (raw || '').replace(/[\s.-]/g, '');
-    if (/^\d{6}$/.test(digits)) return digits;
+  for (const raw of [hash, params.get('c'), params.get('code'), params.get('link')]) {
+    const clean = (raw || '').replace(/[\s.-]/g, '');
+    if (/^[0-9a-zA-Z]{12,24}$/.test(clean)) return clean;
   }
   return null;
 }
@@ -559,7 +559,8 @@ class Meter {
 // ---------- page state ----------
 
 const config = readConfig();
-const code = readCode();
+const linkId = readCode();
+let code = null;
 const ui = {
   kicker: document.getElementById('rx-kicker'),
   title: document.getElementById('rx-title'),
@@ -962,11 +963,25 @@ function renderCode() {
 }
 
 async function main() {
+  if (linkId && !code) {
+    showStatus('Resolving link…');
+    try {
+      const linkUrl = config.signal.replace(/\/room\/?$/, '/link/resolve');
+      const res = await fetch(`${linkUrl}/${linkId}`);
+      if (!res.ok) throw new Error("Link not found or expired.");
+      const data = await res.json();
+      code = data.room_code;
+    } catch (err) {
+      showError(new ShareError('not-found', err.message));
+      return;
+    }
+  }
+
   renderCode();
 
   if (!code) {
-    ui.title.textContent = 'This link is missing its code.';
-    ui.lede.textContent = 'Enidor share links end with the 6-digit room code, like …/d/#482913. Ask the sender for the full link.';
+    ui.title.textContent = 'This link is missing its ID.';
+    ui.lede.textContent = 'Enidor share links end with a unique link ID. Ask the sender for the full link.';
     showMessage({
       title: 'Have a code instead?',
       body: 'Enter it in the Enidor app to open the room:',
@@ -1020,7 +1035,7 @@ addEventListener('beforeunload', (evt) => {
 
 addEventListener('hashchange', () => {
   const next = readCode();
-  if (next && next !== code) location.reload();
+  if (next && next !== linkId) location.reload();
 });
 
 document.addEventListener('click', (evt) => {
