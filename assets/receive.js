@@ -79,11 +79,15 @@ function isExecutable(name) {
 function getMimeType(name) {
   const ext = (name.split('.').pop() || '').toLowerCase();
   const types = {
-    'mp4': 'video/mp4', 'mkv': 'video/x-matroska', 'webm': 'video/webm', 'mov': 'video/quicktime',
-    'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'ogg': 'audio/ogg', 'flac': 'audio/flac',
-    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp',
+    'mp4': 'video/mp4', 'mkv': 'video/x-matroska', 'webm': 'video/webm', 'mov': 'video/quicktime', 'avi': 'video/x-msvideo',
+    'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'ogg': 'audio/ogg', 'flac': 'audio/flac', 'm4a': 'audio/mp4',
+    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp', 'svg': 'image/svg+xml',
     'pdf': 'application/pdf',
-    'txt': 'text/plain', 'csv': 'text/csv', 'md': 'text/markdown'
+    'txt': 'text/plain', 'csv': 'text/csv', 'md': 'text/markdown', 'json': 'application/json', 'html': 'text/html', 'css': 'text/css', 'js': 'text/javascript',
+    'doc': 'application/msword', 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xls': 'application/vnd.ms-excel', 'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'ppt': 'application/vnd.ms-powerpoint', 'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'zip': 'application/zip', 'rar': 'application/vnd.rar', '7z': 'application/x-7z-compressed', 'tar': 'application/x-tar', 'gz': 'application/gzip'
   };
   return types[ext] || 'application/octet-stream';
 }
@@ -787,13 +791,18 @@ function renderListing() {
       );
     }
     return el('li', null,
-      el('div', { class: 'rx-row' },
+      el('button', { type: 'button', class: 'rx-row', onclick: () => startDownload(item) },
         icon(kindOf(item), kindOf(item) === 'file' ? '' : 'accent'),
         el('span', { class: 'rx-name', title: item.name }, item.name),
         el('span', { class: 'rx-size' }, size),
-        button('Download', 'btn-secondary btn-small', () => startDownload(item), { 'aria-label': `Download ${item.name}` }),
+        icon('chevron', 'rx-chevron'),
       ),
     );
+  });
+
+  const folderName = path ? path.split('/').filter(Boolean).pop() : (host || 'Shared Folder');
+  const folderDownloadBtn = button('Download Folder as ZIP', 'btn-primary', () => {
+    startDownload({ name: folderName + '.zip', path: path, is_dir: true, size: 0 });
   });
 
   setCard(
@@ -801,6 +810,7 @@ function renderListing() {
     rows.length
       ? el('ul', { class: 'rx-files' }, rows)
       : el('p', { class: 'rx-empty' }, 'This folder is empty.'),
+    el('div', { class: 'rx-actions', style: 'margin-top: 1rem;' }, folderDownloadBtn)
   );
 }
 
@@ -834,7 +844,8 @@ async function startDownload(item) {
   }
   transfer.sink = sink;
 
-  const batch = new Batcher(sink, total);
+  const isZip = !!item.is_dir;
+  const batch = new Batcher(sink, isZip ? 1024 * 1024 * 100 : total); // large batch for unknown size
   const meter = new Meter(0);
   let received = 0;
 
@@ -857,24 +868,28 @@ async function startDownload(item) {
 
   let reconnecting = false;
   const paint = () => {
-    const pct = total ? Math.min(100, (received / total) * 100) : 100;
-    bar.style.width = `${pct}%`;
+    const pct = total ? Math.min(100, (received / total) * 100) : (isZip ? 100 : 0);
+    bar.style.width = isZip ? '100%' : `${pct}%`;
+    if (isZip) bar.classList.add('pulse-bar'); // we don't have CSS for this, but just in case
     bar.parentElement.setAttribute('aria-valuenow', String(Math.floor(pct)));
     const speed = meter.speed();
-    const parts = [`${formatBytes(received)} of ${formatBytes(total)}`];
+    const parts = [isZip ? `${formatBytes(received)}` : `${formatBytes(received)} of ${formatBytes(total)}`];
     if (reconnecting) parts.push('reconnecting…');
-    else if (speed > 0) parts.push(`${formatBytes(speed)}/s`, formatEta((total - received) / speed));
+    else if (speed > 0) {
+      parts.push(`${formatBytes(speed)}/s`);
+      if (!isZip) parts.push(formatEta((total - received) / speed));
+    }
     if (!reconnecting && session.route) parts.push(session.route === 'direct' ? 'direct' : 'via relay');
     stats.textContent = parts.filter(Boolean).join(' · ');
-    document.title = `${Math.floor(pct)}% · ${item.name}`;
+    document.title = isZip ? `${formatBytes(received)} · ${item.name}` : `${Math.floor(pct)}% · ${item.name}`;
   };
   const painter = setInterval(paint, 250);
 
   const onBytes = (bytes) => {
     if (reconnecting) reconnecting = false;
-    const room = total - received;
+    const room = isZip ? bytes.byteLength : total - received;
     if (room <= 0) return;
-    const chunk = bytes.byteLength > room ? bytes.subarray(0, room) : bytes;
+    const chunk = (!isZip && bytes.byteLength > room) ? bytes.subarray(0, room) : bytes;
     batch.push(chunk);
     received += chunk.byteLength;
     meter.add(received);
@@ -884,30 +899,34 @@ async function startDownload(item) {
   try {
     let stalled = 0;
     let lastErr = null;
-    while (received < total) {
-      const before = received;
-      try {
-        await session.fetchRange(item.path, received, total - received, onBytes, controller.signal);
-      } catch (err) {
-        if (controller.signal.aborted) throw controller.signal.reason;
-        lastErr = err;
+    if (isZip) {
+      await session.fetchRange(item.path, 0, 0, onBytes, controller.signal);
+    } else {
+      while (received < total) {
+        const before = received;
+        try {
+          await session.fetchRange(item.path, received, total - received, onBytes, controller.signal);
+        } catch (err) {
+          if (controller.signal.aborted) throw controller.signal.reason;
+          lastErr = err;
+        }
+        if (received >= total) break;
+        stalled = received > before ? 0 : stalled + 1;
+        if (stalled >= MAX_STALLED_ATTEMPTS) {
+          throw lastErr instanceof ShareError && lastErr.kind !== 'offline'
+            ? lastErr
+            : new ShareError('stalled', lastErr?.message, lastErr);
+        }
+        reconnecting = true;
+        paint();
+        await sleep(1000, controller.signal);
       }
-      if (received >= total) break;
-      stalled = received > before ? 0 : stalled + 1;
-      if (stalled >= MAX_STALLED_ATTEMPTS) {
-        throw lastErr instanceof ShareError && lastErr.kind !== 'offline'
-          ? lastErr
-          : new ShareError('stalled', lastErr?.message, lastErr);
-      }
-      reconnecting = true;
-      paint();
-      await sleep(1000, controller.signal);
     }
     batch.flush();
     if (sink.error) throw new ShareError('storage', sink.error.message, sink.error);
     paint();
     const file = await sink.finish();
-    if (file.size !== total) throw new Error(`stored ${file.size} of ${total} bytes`);
+    if (!isZip && file.size !== total) throw new Error(`stored ${file.size} of ${total} bytes`);
     stored = { item, file, name: sink.name, url: null };
     transfer = null;
     showReady();
@@ -945,7 +964,7 @@ function showReady() {
     preview = el('audio', { src: stored.url, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'width: 100%;' });
   } else if (kind === 'image') {
     preview = el('img', { src: stored.url, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
-  } else if (/\.(pdf|txt|csv|md|doc|docx)$/i.test(item.name)) {
+  } else if (!isExecutable(item.name)) {
     preview = el('iframe', { src: stored.url, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
   }
 
