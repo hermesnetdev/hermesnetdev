@@ -72,6 +72,10 @@ function icon(name, cls = '') {
   return span;
 }
 
+function isExecutable(name) {
+  return /^(exe|sh|bat|cmd|app|dmg|apk|msi|bin|jar)$/i.test((name || '').split('.').pop());
+}
+
 function kindOf(item) {
   if (item.is_dir) return 'folder';
   const ext = (item.name.split('.').pop() || '').toLowerCase();
@@ -792,6 +796,12 @@ function renderListing() {
 
 async function startDownload(item) {
   if (transfer) return;
+  
+  if (isExecutable(item.name)) {
+    showError(new ShareError('blocked', 'Executable files are not allowed for security reasons.'));
+    return;
+  }
+  
   discardStored();
   const total = Math.max(0, Number(item.size) || 0);
   if (total > session.relayAllowance()) {
@@ -904,17 +914,38 @@ async function startDownload(item) {
 // ---------- the finished file: save or discard ----------
 
 function showReady() {
-  const { item } = stored;
+  const { item, file } = stored;
   document.title = `Ready · ${item.name}`;
+  
+  stored.url ??= URL.createObjectURL(file);
+  let preview = null;
+  const kind = kindOf(item);
+  
+  const revoke = () => {
+    URL.revokeObjectURL(stored.url);
+    stored.url = null;
+  };
+  const preventCopy = (e) => e.preventDefault();
+
+  if (kind === 'video') {
+    preview = el('video', { src: stored.url, controls: true, autoplay: true, onloadeddata: revoke, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px; background: #000;' });
+  } else if (kind === 'audio') {
+    preview = el('audio', { src: stored.url, controls: true, autoplay: true, onloadeddata: revoke, oncontextmenu: preventCopy, style: 'width: 100%;' });
+  } else if (kind === 'image') {
+    preview = el('img', { src: stored.url, onload: revoke, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
+  } else if (/\.(pdf|txt|csv|md|doc|docx)$/i.test(item.name)) {
+    preview = el('iframe', { src: stored.url, onload: revoke, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
+  }
+
   setCard(
-    el('div', { class: 'rx-message' },
-      icon('check', 'rx-big ok'),
-      el('h2', { class: 'rx-card-title' }, 'Download complete'),
-      el('p', { class: 'rx-card-body' },
-        el('strong', { class: 'rx-name' }, item.name), ` (${formatBytes(item.size)}) is ready in your browser. Save it to your computer?`),
+    el('div', { class: 'rx-message', style: preview ? 'width: 100%; max-width: 800px;' : '' },
+      !preview && icon('check', 'rx-big ok'),
+      el('h2', { class: 'rx-card-title' }, preview ? item.name : 'Download complete'),
+      preview ? el('div', { class: 'rx-preview', style: 'margin: 20px 0; text-align: center;' }, preview) : null,
+      !preview && el('p', { class: 'rx-card-body' }, el('strong', { class: 'rx-name' }, item.name), ` (${formatBytes(item.size)}) is ready in your browser. Save it to your computer?`),
       el('div', { class: 'rx-actions' },
         button('Save to computer', 'btn-primary', saveStored),
-        button('Discard', 'btn-ghost', () => {
+        button(preview ? 'Close' : 'Discard', 'btn-ghost', () => {
           discardStored();
           renderListing();
         }),
@@ -925,11 +956,12 @@ function showReady() {
 
 function saveStored() {
   const { item, file } = stored;
-  stored.url ??= URL.createObjectURL(file);
-  const a = el('a', { href: stored.url, download: item.name, hidden: true });
+  const tempUrl = URL.createObjectURL(file);
+  const a = el('a', { href: tempUrl, download: item.name, hidden: true });
   document.body.append(a);
   a.click();
   a.remove();
+  setTimeout(() => URL.revokeObjectURL(tempUrl), 1000);
 
   setCard(
     el('div', { class: 'rx-message' },
