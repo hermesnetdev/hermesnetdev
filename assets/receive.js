@@ -638,7 +638,9 @@ function showError(err) {
     case 'not-found':
       return showMessage({
         title: 'No share uses this code',
-        body: `Nothing is being shared under ${spacedCode(code)}. The link may be mistyped, or the room was never opened. Ask the sender to check the code.`,
+        body: code 
+          ? `Nothing is being shared under ${spacedCode(code)}. The link may be mistyped, or the room was never opened. Ask the sender to check the code.`
+          : `This link is invalid or the room was never opened. Ask the sender to check their link.`,
       });
     case 'closed':
       return showMessage({
