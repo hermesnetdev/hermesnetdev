@@ -76,6 +76,18 @@ function isExecutable(name) {
   return /^(exe|sh|bat|cmd|app|dmg|apk|msi|bin|jar)$/i.test((name || '').split('.').pop());
 }
 
+function getMimeType(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  const types = {
+    'mp4': 'video/mp4', 'mkv': 'video/x-matroska', 'webm': 'video/webm', 'mov': 'video/quicktime',
+    'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'ogg': 'audio/ogg', 'flac': 'audio/flac',
+    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp',
+    'pdf': 'application/pdf',
+    'txt': 'text/plain', 'csv': 'text/csv', 'md': 'text/markdown'
+  };
+  return types[ext] || 'application/octet-stream';
+}
+
 function kindOf(item) {
   if (item.is_dir) return 'folder';
   const ext = (item.name.split('.').pop() || '').toLowerCase();
@@ -917,24 +929,24 @@ function showReady() {
   const { item, file } = stored;
   document.title = `Ready · ${item.name}`;
   
-  stored.url ??= URL.createObjectURL(file);
+  if (!stored.url) {
+    const typedFile = new File([file], item.name, { type: getMimeType(item.name) });
+    stored.url = URL.createObjectURL(typedFile);
+  }
+
   let preview = null;
   const kind = kindOf(item);
   
-  const revoke = () => {
-    URL.revokeObjectURL(stored.url);
-    stored.url = null;
-  };
   const preventCopy = (e) => e.preventDefault();
 
   if (kind === 'video') {
-    preview = el('video', { src: stored.url, controls: true, autoplay: true, onloadeddata: revoke, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px; background: #000;' });
+    preview = el('video', { src: stored.url, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px; background: #000;' });
   } else if (kind === 'audio') {
-    preview = el('audio', { src: stored.url, controls: true, autoplay: true, onloadeddata: revoke, oncontextmenu: preventCopy, style: 'width: 100%;' });
+    preview = el('audio', { src: stored.url, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'width: 100%;' });
   } else if (kind === 'image') {
-    preview = el('img', { src: stored.url, onload: revoke, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
+    preview = el('img', { src: stored.url, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
   } else if (/\.(pdf|txt|csv|md|doc|docx)$/i.test(item.name)) {
-    preview = el('iframe', { src: stored.url, onload: revoke, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
+    preview = el('iframe', { src: stored.url, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
   }
 
   setCard(
