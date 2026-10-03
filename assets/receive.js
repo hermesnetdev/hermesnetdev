@@ -785,36 +785,70 @@ function renderListing() {
       return el('li', null,
         el('button', { type: 'button', class: 'rx-row', onclick: () => openFolder(item.path) },
           icon('folder'),
-          el('span', { class: 'rx-name' }, item.name),
-          icon('chevron', 'rx-chevron'),
+          el('span', { class: 'rx-name' }, item.name)
         ),
       );
     }
     return el('li', null,
-      el('button', { type: 'button', class: 'rx-row', onclick: () => startDownload(item) },
+      el('button', { type: 'button', class: 'rx-row', onclick: () => showSingleFile(item) },
         icon(kindOf(item), kindOf(item) === 'file' ? '' : 'accent'),
         el('span', { class: 'rx-name', title: item.name }, item.name),
-        el('span', { class: 'rx-size' }, size),
-        icon('chevron', 'rx-chevron'),
+        el('span', { class: 'rx-size' }, size)
       ),
     );
   });
 
   const folderName = path ? path.split('/').filter(Boolean).pop() : (host || 'Shared Folder');
-  const folderDownloadBtn = button('Download Folder as ZIP', 'btn-primary', () => {
+  const folderDownloadBtn = button('Download Folder', 'btn-primary btn-small', () => {
     startDownload({ name: folderName + '.zip', path: path, is_dir: true, size: 0 });
   });
 
   setCard(
-    crumbs(),
+    el('div', { style: 'display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;' },
+      crumbs(),
+      folderDownloadBtn
+    ),
     rows.length
       ? el('ul', { class: 'rx-files' }, rows)
-      : el('p', { class: 'rx-empty' }, 'This folder is empty.'),
-    el('div', { class: 'rx-actions', style: 'margin-top: 1rem;' }, folderDownloadBtn)
+      : el('p', { class: 'rx-empty' }, 'This folder is empty.')
   );
 }
 
-// ---------- downloading ----------
+// ---------- single file preview & downloading ----------
+
+function showSingleFile(item) {
+  if (isExecutable(item.name)) {
+    showError(new ShareError('blocked', 'Executable files are not allowed for security reasons.'));
+    return;
+  }
+  
+  const kind = kindOf(item);
+  let preview = null;
+  const preventCopy = (e) => e.preventDefault();
+  const streamUrl = new URL(`./--enidor-stream--/${encodeURIComponent(item.path)}`, location.href).href;
+  
+  if (kind === 'video') {
+    preview = el('video', { src: streamUrl, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px; background: #000;' });
+  } else if (kind === 'audio') {
+    preview = el('audio', { src: streamUrl, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'width: 100%;' });
+  } else if (kind === 'image') {
+    preview = el('img', { src: streamUrl, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
+  } else if (!item.name.endsWith('.zip')) {
+    preview = el('iframe', { src: streamUrl, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
+  }
+  
+  setCard(
+    el('div', { class: 'rx-single', style: preview ? 'width: 100%; max-width: 800px;' : '' },
+      !preview && icon(kind, 'rx-big accent'),
+      el('h2', { class: 'rx-card-title' }, item.name),
+      preview ? el('div', { class: 'rx-preview', style: 'margin: 20px 0; text-align: center;' }, preview) : null,
+      el('div', { class: 'rx-actions' },
+        button('Download', 'btn-primary', () => startDownload(item)),
+        button('Back', 'btn-ghost', () => renderListing())
+      )
+    )
+  );
+}
 
 async function startDownload(item) {
   if (transfer) return;
@@ -964,7 +998,7 @@ function showReady() {
     preview = el('audio', { src: stored.url, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'width: 100%;' });
   } else if (kind === 'image') {
     preview = el('img', { src: stored.url, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
-  } else if (!isExecutable(item.name)) {
+  } else if (!isExecutable(item.name) && !item.is_dir && !item.name.endsWith('.zip')) {
     preview = el('iframe', { src: stored.url, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
   }
 
@@ -1113,5 +1147,66 @@ document.addEventListener('click', (evt) => {
   if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
   target.focus({ preventScroll: true });
 });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .catch(err => console.error('SW registration failed:', err));
+
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    const data = event.data;
+    if (data.type === 'ENIDOR_STREAM_REQUEST') {
+      const port = event.ports[0];
+      const item = visibleFiles(listing || { files: [] }).find(f => f.path === data.path) || { name: 'stream', size: 0, path: data.path };
+      
+      const totalSize = Math.max(0, Number(item.size) || 0);
+      let start = 0;
+      let end = totalSize > 0 ? totalSize - 1 : 0;
+      let status = 200;
+      const headers = {
+        'Content-Type': getMimeType(item.name),
+        'Accept-Ranges': 'bytes'
+      };
+      if (totalSize > 0) {
+        headers['Content-Length'] = totalSize;
+      }
+
+      if (data.range && totalSize > 0) {
+        const parts = data.range.replace(/bytes=/, "").split("-");
+        start = parseInt(parts[0], 10);
+        end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+        status = 206;
+        headers['Content-Range'] = `bytes ${start}-${end}/${totalSize}`;
+        headers['Content-Length'] = (end - start) + 1;
+      }
+
+      const streamLength = totalSize > 0 ? (end - start + 1) : 0; // 0 length for unknown sizes (like zip)
+
+      const abortController = new AbortController();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            await session.fetchRange(data.path, start, streamLength, (chunk) => {
+              controller.enqueue(chunk);
+            }, abortController.signal);
+            controller.close();
+          } catch (e) {
+            controller.error(e);
+          }
+        },
+        cancel() {
+          abortController.abort(new DOMException('Stream cancelled', 'AbortError'));
+        }
+      });
+      
+      port.postMessage({
+        type: 'ENIDOR_STREAM_RESPONSE',
+        status,
+        statusText: status === 206 ? 'Partial Content' : 'OK',
+        headers,
+        stream
+      }, [stream]);
+    }
+  });
+}
 
 main();

@@ -267,6 +267,9 @@
   margin: 6px 0 0;
   padding: 0;
   list-style: none;
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .rx-files li + li {
