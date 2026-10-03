@@ -829,6 +829,14 @@ function showSingleFile(item) {
   
   if (kind === 'video') {
     preview = el('video', { src: streamUrl, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px; background: #000;' });
+    preview.onerror = () => {
+      const fallback = el('div', { style: 'padding: 20px; background: var(--surface-2); border-radius: 8px; text-align: center;' },
+        icon('video', 'rx-big'),
+        el('p', { style: 'margin-top: 10px; color: var(--text);' }, 'Your browser does not support previewing this video format (e.g., MKV).'),
+        el('p', { style: 'color: var(--muted); font-size: 0.9rem;' }, 'Please download the file to view it.')
+      );
+      preview.replaceWith(fallback);
+    };
   } else if (kind === 'audio') {
     preview = el('audio', { src: streamUrl, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'width: 100%;' });
   } else if (kind === 'image') {
