@@ -841,7 +841,7 @@ function showSingleFile(item) {
       preview ? el('div', { class: 'rx-preview', style: 'margin: 20px 0; text-align: center;' }, preview) : null,
       el('div', { class: 'rx-actions' },
         button('Download', 'btn-primary', () => startDownload(item)),
-        button('Back', 'btn-ghost', () => renderListing())
+        singleFile ? null : button('Back', 'btn-ghost', () => renderListing())
       )
     )
   );
