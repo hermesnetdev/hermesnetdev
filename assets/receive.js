@@ -764,18 +764,7 @@ function renderListing() {
   const files = visibleFiles(listing);
 
   if (singleFile) {
-    const item = files[0];
-    setCard(
-      el('div', { class: 'rx-single' },
-        icon(kindOf(item), 'accent rx-big'),
-        el('h2', { class: 'rx-card-title rx-name' }, item.name),
-        el('p', { class: 'rx-card-body' }, formatBytes(item.size)),
-        el('div', { class: 'rx-actions' },
-          button('Download', 'btn-primary', () => startDownload(item)),
-        ),
-        el('p', { class: 'rx-note' }, 'Downloads into your browser first, then asks where to save it.'),
-      ),
-    );
+    showSingleFile(files[0]);
     return;
   }
 
