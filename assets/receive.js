@@ -1111,7 +1111,7 @@ async function main() {
       const list = await session.list('');
       if (list.error === 'pin_required') {
         return new Promise((resolve) => {
-          domCard.innerHTML = `
+          ui.card.innerHTML = `
             <div class="rx-status">
               <p class="rx-status-text">Private Deployment</p>
             </div>
