@@ -725,10 +725,10 @@ function backButton(label = 'Back to files', cls = 'btn-secondary') {
 }
 
 function setHeadline() {
-  ui.kicker.textContent = 'Shared with you on Enidor';
+  ui.kicker.textContent = listing && listing.room_name ? `Deployment: ${listing.room_name}` : 'Shared with you on Enidor';
   const who = host || 'Someone';
-  ui.title.textContent = singleFile ? `${who} sent you a file.` : `${who} shared a folder with you.`;
-  document.title = `${who} shared ${singleFile ? 'a file' : 'a folder'} · Enidor`;
+  ui.title.textContent = listing && listing.room_name ? listing.room_name : (singleFile ? `${who} sent you a file.` : `${who} shared a folder with you.`);
+  document.title = listing && listing.room_name ? `${listing.room_name} · Enidor` : `${who} shared ${singleFile ? 'a file' : 'a folder'} · Enidor`;
 }
 
 // ---------- listing ----------
