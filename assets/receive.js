@@ -215,6 +215,7 @@ class Session {
     this.conn = null;
     this.route = null; // 'direct' or 'relay'
     this.directBlocked = false;
+    this.pin = '';
   }
 
   async start() {
@@ -292,7 +293,7 @@ class Session {
     const signal = AbortSignal.timeout(LISTING_TIMEOUT_MS);
     const stream = await this.open(PROTOCOL_META, signal);
     const reading = readAll(stream, signal); // listen before asking, so no reply can slip past
-    stream.send(encoder.encode(`${this.code}\n${subPath}\n${this.guest}\n`));
+    stream.send(encoder.encode(`${this.code}\n${subPath}\n${this.guest}\n${this.pin}\n`));
     closeWrite(stream);
     return JSON.parse(decoder.decode(await reading));
   }
@@ -301,7 +302,7 @@ class Session {
   // stream, which may be early if the connection drops; the caller resumes from what it got.
   async fetchRange(path, offset, length, onBytes, signal) {
     const stream = await this.open(PROTOCOL_DATA, signal);
-    const head = encoder.encode(`${this.code}\n${path}\n${this.guest}\ndownload\n`);
+    const head = encoder.encode(`${this.code}\n${path}\n${this.guest}\n${this.pin}\ndownload\n`);
     const request = new Uint8Array(head.length + 16);
     request.set(head);
     const view = new DataView(request.buffer);
@@ -1106,7 +1107,32 @@ async function main() {
     showStatus('Opening an encrypted tunnel…', 'Connecting straight to the sender’s computer.');
     session = new Session(code, peerId, config.relays);
     await session.start();
-    const list = await session.list('');
+    const attemptList = async () => {
+      const list = await session.list('');
+      if (list.error === 'pin_required') {
+        return new Promise((resolve) => {
+          domCard.innerHTML = `
+            <div class="rx-status">
+              <p class="rx-status-text">Private Deployment</p>
+            </div>
+            <div class="rx-card-body" style="text-align: center;">
+              <p style="margin-bottom: 1rem;">This deployment is protected by a PIN.</p>
+              <input type="password" id="pin-input" placeholder="Enter PIN" style="padding: 0.5rem; font-size: 1rem; margin-bottom: 1rem; border-radius: 4px; border: 1px solid var(--border);" />
+              <br/>
+              <button class="btn btn-primary" id="pin-submit">Access Files</button>
+            </div>
+          `;
+          document.getElementById('pin-submit').onclick = async () => {
+            session.pin = document.getElementById('pin-input').value;
+            showStatus('Opening an encrypted tunnel...', 'Verifying PIN...');
+            resolve(await attemptList());
+          };
+        });
+      }
+      return list;
+    };
+    
+    const list = await attemptList();
     host = String(list.host_name || '').trim();
     // The app answers an unknown or closed room with an empty list, and an empty folder with none.
     if (Array.isArray(list.files) && list.files.length === 0) {
