@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Help &amp; FAQ · Enidor</title>
+  <meta name="description" content="How to receive files from an Enidor link, what the error messages mean, how sharing and revoking work, and what Enidor's servers can and can't see.">
+  <link rel="canonical" href="https://enidor.com/help/">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+  <meta property="og:site_name" content="Enidor">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://enidor.com/help/">
+  <meta property="og:title" content="Enidor Help &amp; FAQ">
+  <meta property="og:description" content="Receiving files, sharing, troubleshooting and privacy — answers to common Enidor questions.">
+  <meta property="og:image" content="https://enidor.com/assets/og.jpg">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="1260">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="../assets/appicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/appicon.png">
+
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/ui.js" defer></script>
+  <script src="../assets/ads.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../" aria-label="Enidor home">
+        <img class="brand-mark" src="../assets/mark.png" alt="" width="295" height="295">
+        <span>Enidor</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="../#ecosystem">Features</a>
+        <a href="../#security">Security</a>
+        <a href="../#start">Get started</a>
+        <a href="./" aria-current="page">Help</a>
+        <a href="../about/">About</a>
+      </nav>
+      <a class="btn btn-primary btn-small" href="../#releases">Download</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <header class="page-head wrap">
+      <p class="eyebrow">Help</p>
+      <h1>Questions, answered.</h1>
+      <p class="lede">Receiving a share, sharing your own files, fixing a stuck download, and what happens to your data along the way.</p>
+    </header>
+
+    <article class="prose wrap">
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ul>
+          <li><a href="#receiving">Receiving files from a link</a></li>
+          <li><a href="#troubleshooting">When a download doesn't work</a></li>
+          <li><a href="#getting-started">Getting started with the app</a></li>
+          <li><a href="#sharing">Sharing your own files</a></li>
+          <li><a href="#privacy">Privacy and security</a></li>
+        </ul>
+      </nav>
+
+      <!-- ============================ receiving ============================ -->
+      <h2 id="receiving">Receiving files from a link</h2>
+
+      <h3>Someone sent me an Enidor link. How do I get the files?</h3>
+      <p>Open the whole link in your browser. The page finds the sender's computer and connects to it directly, then lists what they shared. Click a file to preview it, and press <strong>Download</strong> to keep it. If they shared a folder, <strong>Download Folder</strong> fetches the whole thing as a single <code>.zip</code>.</p>
+      <p>The files come straight from the sender's computer. They aren't uploaded anywhere first, so the sender's computer has to be switched on with Enidor running while you download.</p>
+
+      <h3>Do I need an account or the app?</h3>
+      <p>No. Downloading from a link works in any modern browser, with no account and nothing to install. The app adds things a browser can't do: it saves straight to disk with no size limit, resumes a download after you close it, streams video and audio without downloading, and lets you share your own folders.</p>
+
+      <h3>The sender gave me a 6-digit code, not a link.</h3>
+      <p>Codes open in the app. Install Enidor, click <strong>Join a Guest Room</strong>, and type the code.</p>
+
+      <h3>The page is asking for a PIN.</h3>
+      <p>The sender protected this share with a PIN. Ask them for it — it isn't printed anywhere on the page or in the link.</p>
+
+      <h3>The page says to open the room in the app instead.</h3>
+      <p>Browser downloads aren't switched on for that share. Install the app and open the room from there; the page shows the steps.</p>
+
+      <h3>Where does the downloaded file go?</h3>
+      <p>Into your browser first. As bytes arrive, the page writes them into the browser's private storage, so large files go to disk rather than filling memory. When the file is complete, choose <strong>Save to computer</strong> to put it in your Downloads folder, or close it to throw the browser's copy away. Keep the tab open until the download finishes.</p>
+
+      <h3>How big a file can I download in a browser?</h3>
+      <p>As big as the space your browser allows the site, which depends mostly on how much free disk space you have. The page checks before it starts and tells you if a file won't fit. Browsers without private storage keep the download in memory instead, up to 1 GB. The app has no limit.</p>
+
+      <h3>Can I preview a file before downloading it?</h3>
+      <p>Yes. Videos, music and images play or open right in the page, streamed from the sender's computer. Other documents open in the page when your browser can show them. Some video formats, such as MKV, can't play in most browsers — download those instead.</p>
+
+      <h3>Why can't I download a program?</h3>
+      <p>Programs and installers — <code>.exe</code>, <code>.msi</code>, <code>.dmg</code>, <code>.app</code>, <code>.apk</code>, <code>.sh</code>, <code>.bat</code>, <code>.cmd</code>, <code>.bin</code> and <code>.jar</code> files — are blocked in the browser, so a share link can't be used to push malware at someone who wasn't expecting it.</p>
+
+      <aside class="ad" data-ad="help-1" aria-label="Advertisement" hidden>
+        <p class="ad-label">Advertisement</p>
+      </aside>
+
+      <!-- ============================ troubleshooting ============================ -->
+      <h2 id="troubleshooting">When a download doesn't work</h2>
+
+      <h3>“The sender's computer is offline”</h3>
+      <p>Enidor found the share, but the computer holding the files isn't reachable right now. Files come straight from that computer, so it needs to be on and connected, with Enidor running. Try again once it is.</p>
+
+      <h3>“This share isn't available”</h3>
+      <p>The link may be mistyped or cut short, the share may have expired, or the sender closed it. Ask them to check the link or share it again.</p>
+
+      <h3>“Couldn't reach the Enidor network”</h3>
+      <p>Check your internet connection and try again. Some work and school networks block peer-to-peer connections; if that's the case, the app may still get through.</p>
+
+      <h3>“Your network blocks direct connections”</h3>
+      <p>The network you're on won't allow a direct link to the sender's computer, and the file is too big to pass through Enidor's relay. Try another network — a phone hotspot usually works — or open the share in the app.</p>
+
+      <h3>“The transfer stopped”</h3>
+      <p>The connection to the sender kept dropping. The page reconnects on its own and carries on from the last byte it received; it only gives up after eight tries in a row that move no data. Try again, or use the app, which can also resume after you close it.</p>
+
+      <h3>“Too big for this browser” or “Your browser ran out of room”</h3>
+      <p>The file needs more space than your browser can give this site. Free up disk space and try again, or use the app, which saves straight to disk.</p>
+
+      <!-- ============================ getting started ============================ -->
+      <h2 id="getting-started">Getting started with the app</h2>
+
+      <h3>What is Enidor?</h3>
+      <p>Enidor links the computers you own into one private, encrypted network — a mesh. Every drive becomes reachable from your other devices, and you can share files and folders with other people straight from your own computer. Nothing is uploaded to a cloud, and there's no storage limit beyond the drives you already have.</p>
+
+      <h3>How much does it cost?</h3>
+      <p>Enidor is free.</p>
+
+      <h3>Which computers does it run on?</h3>
+      <p>macOS 12 or later on Apple Silicon and Intel, and 64-bit Windows 10 and 11. Linux, Android and iOS are coming. Anyone can receive files from a link in a browser, whatever they use.</p>
+
+      <h3>Do I need to change my router settings or have a public IP address?</h3>
+      <p>No. Your devices dial out to each other instead of waiting to be found, so there are no ports to open and nothing exposed to the internet.</p>
+
+      <h3>How do I set it up?</h3>
+      <ol>
+        <li>Install Enidor on your main computer and claim a <strong>Global Handle</strong>, like <code>@alex</code>.</li>
+        <li>Scan the QR code with an authenticator app, save your recovery codes, and set the <strong>Ecosystem PIN</strong> that unlocks your local vault.</li>
+        <li>Install Enidor on a second computer and sign in with the same handle, your authenticator and your PIN. Both machines now appear under <strong>My Ecosystem</strong>.</li>
+      </ol>
+      <p>The <a href="../#start">full walkthrough</a> on the home page covers peers, sharing and security settings too.</p>
+
+      <h3>How do I update it?</h3>
+      <p>You don't need to. Once installed, Enidor keeps itself up to date in the background. Every build is also listed on the <a href="../#releases">releases section</a> of the home page.</p>
+
+      <!-- ============================ sharing ============================ -->
+      <h2 id="sharing">Sharing your own files</h2>
+
+      <h3>How do I send a file to someone I work with?</h3>
+      <p>Link with them once: in <strong>My Peers</strong>, search their handle and choose <strong>Forge Link</strong>. After they accept, open your chat and attach the file. Nothing is uploaded — Enidor opens a <strong>Micro-Room</strong>, a private tunnel to that one file, which stays on your drive.</p>
+
+      <h3>Can I take a file back after sending it?</h3>
+      <p>Yes. When you attach a file you choose how long the other person can reach it: an hour, a day, a week, or with no expiry. Press <strong>Revoke Access</strong> on the message at any time and the tunnel closes at once, even if they're in the middle of downloading.</p>
+
+      <h3>How do I send a big file to someone I'm not linked with?</h3>
+      <p>Use <strong>Pulse Drop</strong>. Look up their handle and choose Pulse Drop instead of forging a link. They get a prompt, and once they accept, the file moves straight to them at full speed. Nothing stays behind afterwards.</p>
+
+      <h3>How do I share folders with a group?</h3>
+      <p>Open a <strong>Guest Room</strong>. You can host up to five folders at once behind a short code. Anyone with the code can open exactly those folders — and nothing else on your computer — until you close the room.</p>
+
+      <h3>Can people watch a video without downloading it?</h3>
+      <p>In the app, yes: video, high-quality audio and raw images stream straight from the host's drive, in Enidor's own previewer or handed to VLC or IINA.</p>
+
+      <aside class="ad" data-ad="help-2" aria-label="Advertisement" hidden>
+        <p class="ad-label">Advertisement</p>
+      </aside>
+
+      <!-- ============================ privacy ============================ -->
+      <h2 id="privacy">Privacy and security</h2>
+
+      <h3>Can hermesnetdev see my files or messages?</h3>
+      <p>No. Files and messages move directly between devices through encrypted tunnels. There's no cloud storage and no copy on a server for anyone to read, sell or leak.</p>
+
+      <h3>Then what are Enidor's servers for?</h3>
+      <p>Introductions. A directory tells your browser or app which computer is hosting a share, and a relay passes along the short handshake that lets two devices connect to each other directly. If a network won't allow a direct connection, the relay can carry the traffic too, but it stays encrypted end to end, so the relay can't read it.</p>
+
+      <h3>Who can see that I downloaded something?</h3>
+      <p>The sender can. Their Activity Monitor and audit log show each visitor — someone downloading in a browser appears as, for example, <em>Web guest · Chrome on macOS</em> — along with which file they opened and whether they streamed it or took a copy.</p>
+
+      <h3>What if one of my computers is lost or stolen?</h3>
+      <p>Without your Ecosystem PIN, the vault on that machine stays encrypted. Unlinking a device closes its tunnels immediately and deletes the trust between it and your other devices. And the kill switch in the Security Center drops every tunnel on a machine in one click.</p>
+
+      <h3>Does this website use cookies?</h3>
+      <p>The receive page doesn't. Other pages show ads from Google, which can use cookies. The <a href="../privacy/">privacy policy</a> has the details and how to opt out.</p>
+
+      <h2 id="contact">Still stuck?</h2>
+      <p>Report a bug or ask for a feature on <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">GitHub</a>. Include what you were doing, the message the page or app showed, and your operating system and browser.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>© <span id="year">2026</span> hermesnetdev</p>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="./">Help</a>
+        <a href="../about/">About</a>
+        <a href="../privacy/">Privacy</a>
+        <a href="https://github.com/hermesnetdev">GitHub</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">All releases</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Report an issue</a>
+      </nav>
+      <p class="footer-note">Enidor — built with performance, privacy and absolute autonomy in mind.</p>
+    </div>
+  </footer>
+</body>
+</html>

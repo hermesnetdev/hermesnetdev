@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy · Enidor</title>
+  <meta name="description" content="What enidor.com collects, the advertising cookies Google may use, and how the receive page handles shared files.">
+  <link rel="canonical" href="https://enidor.com/privacy/">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+  <meta property="og:site_name" content="Enidor">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://enidor.com/privacy/">
+  <meta property="og:title" content="Enidor Privacy Policy">
+  <meta property="og:image" content="https://enidor.com/assets/og.jpg">
+
+  <link rel="icon" href="../assets/appicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/appicon.png">
+
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/ui.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../" aria-label="Enidor home">
+        <img class="brand-mark" src="../assets/mark.png" alt="" width="295" height="295">
+        <span>Enidor</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="../#ecosystem">Features</a>
+        <a href="../#security">Security</a>
+        <a href="../#start">Get started</a>
+        <a href="../help/">Help</a>
+        <a href="../about/">About</a>
+      </nav>
+      <a class="btn btn-primary btn-small" href="../#releases">Download</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <header class="page-head wrap">
+      <p class="eyebrow">Privacy</p>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated 13 October 2026</p>
+    </header>
+
+    <article class="prose wrap">
+      <p>This policy covers the website at <strong>enidor.com</strong>, including the receive page at <strong>enidor.com/d/</strong>, run by hermesnetdev. It explains what happens to information about you when you visit.</p>
+
+      <h2>The short version</h2>
+      <ul>
+        <li>We don't run analytics, and we don't ask you for any personal information on this site.</li>
+        <li>The site is hosted on GitHub Pages. GitHub logs visitors' IP addresses for security.</li>
+        <li>Some pages show ads from Google, which may use cookies. The receive page never shows ads.</li>
+        <li>Files you receive come straight from the sender's computer, encrypted end to end. We can't read them, and they're never stored on our servers.</li>
+      </ul>
+
+      <h2 id="hosting">Hosting</h2>
+      <p>enidor.com is served by <a href="https://pages.github.com/">GitHub Pages</a>. When you visit any page, GitHub logs and stores your IP address for security purposes, whether or not you have a GitHub account. GitHub's handling of that data is described in the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub General Privacy Statement</a>. We don't receive those logs.</p>
+
+      <h2 id="advertising">Advertising</h2>
+      <p>The home, Help and About pages may show ads served by Google AdSense. The receive page (<code>/d/</code>) and this privacy policy don't.</p>
+      <ul>
+        <li>Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other websites.</li>
+        <li>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visits to this site and/or other sites on the Internet.</li>
+        <li>You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads">Google Ads Settings</a>.</li>
+        <li>You can also opt out of other third-party vendors' use of cookies for personalized advertising at <a href="https://www.aboutads.info/choices/">aboutads.info</a>.</li>
+      </ul>
+      <p>Visitors in the European Economic Area, the United Kingdom and Switzerland are asked for consent before Google uses cookies or similar technologies for personalized ads, and can change that choice later. <a href="https://policies.google.com/technologies/partner-sites">How Google uses information from sites that use its services</a> explains what Google collects and how.</p>
+
+      <h2 id="releases">The release list</h2>
+      <p>The home page and the receive page link to the latest Enidor release. To find it, your browser asks GitHub's API directly, so GitHub sees your IP address. Your browser keeps a copy in local storage for 10 minutes so repeat visits don't ask again. The copy contains only public release information and stays in your browser.</p>
+
+      <h2 id="receive-page">The receive page</h2>
+      <p>The receive page lets you download files someone shared with you, straight from their computer. It has no ads, no analytics and no cookies.</p>
+      <ul>
+        <li><strong>The link.</strong> The share's ID sits after the <code>#</code> in the link. Browsers don't send that part to the web server, so GitHub never sees it. The page sends it to Enidor's room directory to find out which computer is hosting the share.</li>
+        <li><strong>Enidor's servers.</strong> The room directory and the relay that sets up the connection see your IP address and the share you're opening, as any server you connect to does. The relay may also carry the transfer when a direct connection isn't possible. Transfers are encrypted end to end, so it can't read them.</li>
+        <li><strong>The sender.</strong> Your browser connects to the sender's computer. The sender's app records the visit in their Activity Monitor and audit log, labelled with your browser and operating system (for example, “Web guest · Chrome on macOS”), along with which files you opened. A PIN you enter is sent to the sender's computer to unlock the share.</li>
+        <li><strong>Your browser.</strong> Downloads are written into your browser's private storage while they arrive, and stay there until you save or discard them. Anything left over is deleted automatically on a later visit once it's more than an hour old.</li>
+      </ul>
+
+      <h2 id="storage">Cookies and browser storage</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">What</th><th scope="col">Where</th><th scope="col">Why</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Google advertising cookies</td><td>Home, Help and About pages</td><td>Serving and measuring ads, subject to your consent where required</td></tr>
+            <tr><td><code>enidor:releases:v1</code> (local storage)</td><td>Home page and receive page</td><td>Caches the public release list for 10 minutes</td></tr>
+            <tr><td><code>enidor-downloads</code> (private file storage)</td><td>Receive page</td><td>Holds a download in progress until you save or discard it</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Clearing this site's data in your browser removes all of it.</p>
+
+      <h2 id="children">Children</h2>
+      <p>This site isn't directed at children under 13, and we don't knowingly collect information from them.</p>
+
+      <h2 id="changes">Changes to this policy</h2>
+      <p>If this policy changes, the new version will be posted on this page with a new date at the top.</p>
+
+      <h2 id="contact">Contact</h2>
+      <p>Questions about this policy can be raised on <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">GitHub</a>.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>© <span id="year">2026</span> hermesnetdev</p>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="../help/">Help</a>
+        <a href="../about/">About</a>
+        <a href="./">Privacy</a>
+        <a href="https://github.com/hermesnetdev">GitHub</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">All releases</a>
+        <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Report an issue</a>
+      </nav>
+      <p class="footer-note">Enidor — built with performance, privacy and absolute autonomy in mind.</p>
+    </div>
+  </footer>
+</body>
+</html>

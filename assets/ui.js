@@ -1,7 +1,10 @@
-// Small presentation helpers: reveal-on-scroll for sections.
+// Small presentation helpers: the footer year and reveal-on-scroll for sections.
 // The release list lives in app.js.
 (() => {
   'use strict';
+
+  const year = document.getElementById('year');
+  if (year) year.textContent = String(new Date().getFullYear());
 
   const targets = document.querySelectorAll('[data-reveal]');
   if (!targets.length) return;

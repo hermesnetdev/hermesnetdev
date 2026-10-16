@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+# the libp2p bundle's build recipe, not a page
+Disallow: /tools/
+
+Sitemap: https://enidor.com/sitemap.xml
