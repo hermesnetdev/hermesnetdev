@@ -1,4 +1,1 @@
-# Sellers allowed to sell ads on enidor.com (https://iabtechlab.com/ads-txt/).
-# When you add the site in AdSense, delete the "# " at the start of the line below and put your
-# publisher ID's 16 digits in place of the zeros — the same ID as CLIENT in assets/ads.js.
-# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+google.com, pub-8298378592499092, DIRECT, f08c47fec0942fa0

@@ -12,7 +12,7 @@ stack, so nothing is fetched at runtime apart from Google AdSense, once it's swi
   both themes via the `.dark` class
 - `assets/app.js`: loads releases live from [hermesnetdev/From_project_1_releases](https://github.com/hermesnetdev/From_project_1_releases/releases)
 - `assets/ui.js`: the footer year, and reveal-on-scroll for sections marked `data-reveal`
-- `assets/ads.js`: Google AdSense — the publisher ID and ad units (see [Ads](#ads))
+- `assets/ads.js`: fills the Google AdSense placements with ad units (see [Ads](#ads))
 - `ads.txt`, `robots.txt`, `sitemap.xml`: for ad networks and search crawlers
 - `CNAME`: the custom domain, `enidor.com`
 - `googlefef17e26addffc31.html`: Google Search Console's ownership check. Keep it
@@ -81,25 +81,20 @@ if the project gets an account.
 
 ## Ads
 
-The home, Help and About pages carry Google AdSense. It stays off until it's set up: until
-then nothing loads from Google and the ad placements stay hidden.
+The home, Help and About pages carry Google AdSense (publisher ID `ca-pub-8298378592499092`).
+Each has Google's AdSense tag in its `<head>`, and `assets/ads.js` fills its ad placements.
 
 **The receive page (`d/`) never gets ads.** Ad code runs with the same access as the page's own
 code. There, it could read the share link, the PIN as it's typed, and the shared files
 themselves (by asking `d/sw.js` to stream them). The privacy page is ad-free too.
 
-### Switching it on
+### Setup
 
-1. Sign up at <https://adsense.google.com> and add the site `enidor.com`.
-2. Put your publisher ID in `CLIENT` at the top of `assets/ads.js` (`ca-pub-` + 16 digits).
-3. In `ads.txt`, uncomment the `google.com` line and put the same 16 digits in place of the
-   zeros. GitHub Pages serves it at `https://enidor.com/ads.txt`.
-4. Push, then in AdSense choose **Ads.txt snippet** to verify the site and request review.
-   The AdSense script is added by `assets/ads.js`, not written into each page, so verify
-   with ads.txt rather than the code-snippet option.
-5. In **Privacy & messaging**, publish the **European regulations** message. Without a
-   certified consent message, visitors from the EEA, UK and Switzerland don't get
-   personalized ads.
+- The site is verified with the **AdSense code snippet**, the tag in the home page's `<head>`.
+  `ads.txt` lists the same publisher ID; GitHub Pages serves it at `https://enidor.com/ads.txt`.
+- In **Privacy & messaging**, publish the **European regulations** message. Without a
+  certified consent message, visitors from the EEA, UK and Switzerland don't get
+  personalized ads.
 
 ### Placing ads
 
@@ -116,8 +111,8 @@ exclude the hero and the releases section in its settings for the same reason.
 Pages that aren't `enidor.com` (a local preview, say) request test ads, so they don't count
 as impressions.
 
-Adding a page: link it from the footers and add it to `sitemap.xml`. To give it ads, load
-`assets/ads.js` and add a placement.
+Adding a page: link it from the footers and add it to `sitemap.xml`. To give it ads, copy the
+AdSense tag and the `assets/ads.js` line from the home page's `<head>`, and add a placement.
 
 ## Receive page
 
