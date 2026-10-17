@@ -51,6 +51,10 @@
   <link rel="modulepreload" href="../assets/vendor/libp2p.js">
   <script src="../assets/app.js" defer></script>
   <script type="module" src="../assets/receive.js"></script>
+  <!-- Google AdSense. Its code runs with this page's access, so it can see what's on the page;
+       visitors are told so under the download card, and the app has no ads. -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8298378592499092" crossorigin="anonymous"></script>
+  <script src="../assets/ads.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main" data-scroll="main">Skip to content</a>
@@ -99,8 +103,14 @@
             No account needed
           </li>
         </ul>
+        <p class="rx-ad-note">This page shows ads. For private, ad-free downloads, open the link in the <a href="../#releases" data-scroll="get-enidor">Enidor app</a>.</p>
       </div>
     </section>
+
+    <!-- ad: filled by assets/ads.js from its ad units; kept out of the download card -->
+    <aside class="ad wrap" data-ad="receive-1" aria-label="Advertisement" hidden>
+      <p class="ad-label">Advertisement</p>
+    </aside>
 
     <!-- ============================ get the app ============================ -->
     <section id="get-enidor" class="section dark rx-promo">
@@ -175,6 +185,10 @@
         <p class="rx-more"><a class="link-arrow" href="../">See everything Enidor does</a></p>
       </div>
     </section>
+
+    <aside class="ad wrap" data-ad="receive-2" aria-label="Advertisement" hidden>
+      <p class="ad-label">Advertisement</p>
+    </aside>
   </main>
 
   <footer class="site-footer">

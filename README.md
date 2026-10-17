@@ -81,12 +81,15 @@ if the project gets an account.
 
 ## Ads
 
-The home, Help and About pages carry Google AdSense (publisher ID `ca-pub-8298378592499092`).
-Each has Google's AdSense tag in its `<head>`, and `assets/ads.js` fills its ad placements.
+Every page carries Google AdSense (publisher ID `ca-pub-8298378592499092`). Each has Google's
+AdSense tag in its `<head>`, and `assets/ads.js` fills its ad placements.
 
-**The receive page (`d/`) never gets ads.** Ad code runs with the same access as the page's own
-code. There, it could read the share link, the PIN as it's typed, and the shared files
-themselves (by asking `d/sw.js` to stream them). The privacy page is ad-free too.
+**Ads on the receive page (`d/`) are a trade-off.** Ad code runs with the same access as the
+page's own code. There, it could read the share link, the PIN as it's typed, and the shared
+files themselves (by asking `d/sw.js` to stream them). The page says it shows ads and points
+to the app, which has none, and the privacy policy says what the ad code can see. To keep
+shares away from ad code, serve the receiver from another subdomain (say `files.enidor.com`)
+in a frame on `d/`, with the ads outside the frame.
 
 ### Setup
 
@@ -100,7 +103,8 @@ themselves (by asking `d/sw.js` to stream them). The privacy page is ad-free too
 
 After approval, create display ad units (**Ads → By ad unit**) and put their IDs in `SLOTS` in
 `assets/ads.js`. Placements are `<aside class="ad" data-ad="…">` elements in the pages:
-`home-1`, `home-2`, `help-1`, `help-2` and `about-1`. Each uses its own unit if `SLOTS` has
+`home-1`, `home-2`, `help-1`, `help-2`, `about-1`, `privacy-1`, `receive-1` and `receive-2`.
+Each uses its own unit if `SLOTS` has
 one, otherwise `SLOTS.default`. A placement with no unit, or one AdSense leaves unfilled,
 stays hidden.
 

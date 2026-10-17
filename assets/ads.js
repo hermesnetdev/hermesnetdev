@@ -1,7 +1,6 @@
 // Google AdSense ad placements. A page shows ads only if its <head> has Google's AdSense tag
 // (adsbygoogle.js?client=ca-pub-…); this file fills that page's [data-ad] placements with ad
-// units. The receive page (d/) never gets the tag or this file: ad code there could read share
-// links, PINs and the files themselves.
+// units.
 (() => {
   'use strict';
 

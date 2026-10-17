@@ -21,6 +21,8 @@
 
   <link rel="stylesheet" href="../assets/style.css">
   <script src="../assets/ui.js" defer></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8298378592499092" crossorigin="anonymous"></script>
+  <script src="../assets/ads.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -46,7 +48,7 @@
     <header class="page-head wrap">
       <p class="eyebrow">Privacy</p>
       <h1>Privacy Policy</h1>
-      <p class="updated">Last updated 13 October 2026</p>
+      <p class="updated">Last updated 17 October 2026</p>
     </header>
 
     <article class="prose wrap">
@@ -56,7 +58,7 @@
       <ul>
         <li>We don't run analytics, and we don't ask you for any personal information on this site.</li>
         <li>The site is hosted on GitHub Pages. GitHub logs visitors' IP addresses for security.</li>
-        <li>Some pages show ads from Google, which may use cookies. The receive page never shows ads.</li>
+        <li>Pages on this site, including the receive page, show ads from Google, which may use cookies. The Enidor app has no ads.</li>
         <li>Files you receive come straight from the sender's computer, encrypted end to end. We can't read them, and they're never stored on our servers.</li>
       </ul>
 
@@ -64,7 +66,7 @@
       <p>enidor.com is served by <a href="https://pages.github.com/">GitHub Pages</a>. When you visit any page, GitHub logs and stores your IP address for security purposes, whether or not you have a GitHub account. GitHub's handling of that data is described in the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub General Privacy Statement</a>. We don't receive those logs.</p>
 
       <h2 id="advertising">Advertising</h2>
-      <p>The home, Help and About pages may show ads served by Google AdSense. The receive page (<code>/d/</code>) and this privacy policy don't.</p>
+      <p>Pages on enidor.com, including the receive page (<code>/d/</code>), may show ads served by Google AdSense.</p>
       <ul>
         <li>Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other websites.</li>
         <li>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visits to this site and/or other sites on the Internet.</li>
@@ -77,13 +79,18 @@
       <p>The home page and the receive page link to the latest Enidor release. To find it, your browser asks GitHub's API directly, so GitHub sees your IP address. Your browser keeps a copy in local storage for 10 minutes so repeat visits don't ask again. The copy contains only public release information and stays in your browser.</p>
 
       <h2 id="receive-page">The receive page</h2>
-      <p>The receive page lets you download files someone shared with you, straight from their computer. It has no ads, no analytics and no cookies.</p>
+      <p>The receive page lets you download files someone shared with you, straight from their computer. It has no analytics.</p>
       <ul>
+        <li><strong>Ads.</strong> The page shows ads from Google, as described <a href="#advertising">above</a>. Google's ad code runs inside the page, so, like any code on a page, it can technically see what the page shows, such as the link and the names of the files. If you'd rather avoid that, open the link in the Enidor app, which has no ads.</li>
         <li><strong>The link.</strong> The share's ID sits after the <code>#</code> in the link. Browsers don't send that part to the web server, so GitHub never sees it. The page sends it to Enidor's room directory to find out which computer is hosting the share.</li>
         <li><strong>Enidor's servers.</strong> The room directory and the relay that sets up the connection see your IP address and the share you're opening, as any server you connect to does. The relay may also carry the transfer when a direct connection isn't possible. Transfers are encrypted end to end, so it can't read them.</li>
         <li><strong>The sender.</strong> Your browser connects to the sender's computer. The sender's app records the visit in their Activity Monitor and audit log, labelled with your browser and operating system (for example, “Web guest · Chrome on macOS”), along with which files you opened. A PIN you enter is sent to the sender's computer to unlock the share.</li>
         <li><strong>Your browser.</strong> Downloads are written into your browser's private storage while they arrive, and stay there until you save or discard them. Anything left over is deleted automatically on a later visit once it's more than an hour old.</li>
       </ul>
+
+      <aside class="ad" data-ad="privacy-1" aria-label="Advertisement" hidden>
+        <p class="ad-label">Advertisement</p>
+      </aside>
 
       <h2 id="storage">Cookies and browser storage</h2>
       <div class="table-wrap">
@@ -92,7 +99,7 @@
             <tr><th scope="col">What</th><th scope="col">Where</th><th scope="col">Why</th></tr>
           </thead>
           <tbody>
-            <tr><td>Google advertising cookies</td><td>Home, Help and About pages</td><td>Serving and measuring ads, subject to your consent where required</td></tr>
+            <tr><td>Google advertising cookies</td><td>Every page</td><td>Serving and measuring ads, subject to your consent where required</td></tr>
             <tr><td><code>enidor:releases:v1</code> (local storage)</td><td>Home page and receive page</td><td>Caches the public release list for 10 minutes</td></tr>
             <tr><td><code>enidor-downloads</code> (private file storage)</td><td>Receive page</td><td>Holds a download in progress until you save or discard it</td></tr>
           </tbody>
