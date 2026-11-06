@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Content Security Policy. Inline styles are allowed only for the decorative SVG/mockup markup. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Enidor — The cloud you already own</title>
   <meta name="description" content="Enidor links your computers into one encrypted, peer-to-peer mesh. Mount any device, share files revocably, stream media — no cloud servers, no public IP. Free for macOS and Windows.">
   <link rel="canonical" href="https://hermesnetdev.github.io/hermesnetdev/">
@@ -123,6 +125,14 @@
           <a class="btn btn-secondary" data-platform="windows" href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
             <span>Download for Windows</span>
+          </a>
+          <a class="btn btn-secondary" data-platform="linux" data-optional hidden href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+            <span>Download for Linux</span>
+          </a>
+          <a class="btn btn-secondary" data-platform="android" data-optional hidden href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+            <span>Download for Android</span>
           </a>
         </div>
         <p class="cta-meta" id="cta-meta">Free · macOS (Apple Silicon &amp; Intel) · Windows 10 &amp; 11 (64-bit)</p>

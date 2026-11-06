@@ -1424,3 +1424,15 @@ code {
     transition: none;
   }
 }
+
+/* .btn sets display, which would otherwise override the hidden attribute (app.js hides
+   download buttons for platforms the latest release doesn't ship). */
+.btn[hidden] {
+  display: none;
+}
+
+/* Release notes are rendered as plain text, never HTML. */
+.release-notes-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

@@ -110,6 +110,28 @@
   line-height: 1.5;
 }
 
+.rx-conn {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.rx-conn::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--warn);
+  vertical-align: 1px;
+}
+
+.rx-conn[data-state="direct"]::before {
+  background: var(--ok);
+}
+
 .rx-actions {
   display: flex;
   flex-wrap: wrap;
@@ -491,4 +513,119 @@ button.rx-row:hover {
 .rx-more {
   margin-top: 22px;
   text-align: center;
+}
+
+/* ---------- listing header, previews, warnings, PIN (formerly inline styles; the page's CSP
+   allows no inline styles) ---------- */
+
+.rx-list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.rx-wide {
+  width: 100%;
+  max-width: 800px;
+}
+
+.rx-preview {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.rx-media,
+.rx-img {
+  max-width: 100%;
+  max-height: 50vh;
+  border-radius: 8px;
+}
+
+.rx-media {
+  background: #000;
+}
+
+.rx-audio {
+  width: 100%;
+}
+
+.rx-frame {
+  width: 100%;
+  height: 60vh;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.rx-text {
+  max-height: 60vh;
+  overflow: auto;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: 0.8125rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.rx-preview-fallback {
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  text-align: center;
+}
+
+.rx-preview-fallback p {
+  margin-top: 10px;
+  color: var(--text);
+}
+
+.rx-warning {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.rx-warning .glyph {
+  flex: none;
+  color: var(--warn);
+}
+
+.rx-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.rx-pin-input {
+  width: min(100%, 240px);
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 0.2em;
+}
+
+.rx-pin-error {
+  color: var(--danger);
+  font-size: 0.875rem;
 }

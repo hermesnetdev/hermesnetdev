@@ -76,43 +76,97 @@ if the project gets an account.
 ## Receive page
 
 `d/` lets someone download a Guest Room share without installing anything. A share link is
-the page plus the room's 6-digit code:
+the page plus a 128-bit link ID that the app creates with **Copy web link**
+(`POST /link/create/{code}` on the relay):
 
 ```
-https://hermesnetdev.github.io/hermesnetdev/d/#482913
+https://hermesnetdev.github.io/hermesnetdev/d/?link=3f9c0e…(32 hex chars)
+https://hermesnetdev.github.io/hermesnetdev/d/?link=3f9c0e…#peer=12D3KooW…   (optional pin to the sharer)
 ```
 
-`d/?c=482913` and `d/?code=482913` work too. The hash form keeps the code out of server logs and
-`Referer` headers. The page reads the code only from the URL. There's no box to type one in.
+`d/#<link id>` works too. The page reads the link only from the URL; there's no box to type one in.
+
+**Old 6-digit links (`d/#482913`) are no longer supported** in the browser: six digits can be
+enumerated, so the page no longer resolves room codes. It recognises the old format and tells
+the visitor to ask the sender for a new link (or to enter the code in the app).
 
 ### How it works
 
 The page is a small libp2p peer. It speaks the same protocol as the desktop app
 (`From_project_1/internal/core/node.go`):
 
-1. `GET {signal}/{code}` asks the room directory which peer hosts the code. Only the peer ID
-   is used from the answer.
+1. `GET {signal-base}/link/resolve/{id}` (15 s timeout) turns the link into the room code and the
+   **sharer's peer ID**, which the relay recorded from the sharer's signed request. If the link
+   has a `#peer=` fragment, the two must agree. `GET {signal}/{code}` then returns the room's
+   address, and its peer ID must be the same one. After connecting, the page checks that the
+   Noise-authenticated remote peer (`connection.remotePeer`) is that ID, and stops with "This
+   link doesn't lead to its sender" otherwise, so a tampered directory can't redirect visitors to
+   another computer.
 2. It connects **straight to the sharer's computer over WebRTC**:
    `{relay}/p2p-circuit/webrtc/p2p/{peer}`. The relay carries only the WebRTC handshake (an
    offer, an answer, and each side's addresses, a few KB). Then both sides hole-punch through
    their routers, the same trick two desktop apps use with each other, and the file moves
    directly. The desktop app answers the handshake with `internal/core/webrtc` in
    From_project_1.
-3. If that fails, because the network blocks hole punching or the sharer runs an older app
-   without WebRTC, it falls back to going through the relay: `{relay}/p2p-circuit/p2p/{peer}`.
-   Both routes are encrypted end to end, so the relay can't read what it carries. When the
-   relay caps what a connection may carry and the file is bigger than that, the page says the
-   network blocks direct connections, instead of crawling.
+3. **File data never goes through the relay.** The page only opens streams on a connection it
+   has checked is WebRTC (not a relay circuit, not limited), closes the relayed connection to the
+   sharer once the direct one is up, and gives WebRTC only STUN servers, never TURN. If no direct
+   path opens after three attempts (20 s, 30 s, 45 s, with backoff), the page says so instead of
+   falling back. The app enforces the same rule: it refuses any request that arrives over a relayed
+   connection (`handleDirect` in `internal/core/node.go`).
+
+   To make direct connections work on more networks, the app gathers its WebRTC candidates on
+   one shared UDP port and one ICE-TCP port, and maps both on the router with UPnP or NAT-PMP
+   when the router allows it (`internal/core/webrtc/reachability.go`). A mapped port is reachable
+   even from a browser behind a symmetric NAT, and ICE-TCP gets through networks that block UDP.
+   Without either, the two networks must allow hole punching; two symmetric NATs can't connect
+   without a TURN relay, which this design rules out.
+
+   If the direct connection drops, the page reconnects straight away and downloads and video
+   previews resume from the last byte received. The line under the card shows the connection's
+   state live.
 4. `/streamfs/meta/1.2.0` lists the folder, and visitors can open subfolders.
 5. `/streamfs/data/1.2.0` streams the file with an offset and length. If the connection drops,
    the page reconnects and resumes from the last byte it received, the same way the app does.
-   It gives up after 8 attempts in a row that move no data.
+   It gives up after 8 attempts in a row that move no data. Video and audio previews read ahead
+   at most 16 MB, so the sender only sends as fast as the player plays.
+
+The app keeps up to 2 MiB in flight per stream (`sendWindow` in
+`internal/core/webrtc/stream_write.go`). go-libp2p's default, 32 KiB, limits a download to about
+0.5 MB/s at a 50 ms round trip however fast the link is. `throughput_test.go` measures it over
+simulated links.
 
 Bytes are written into the browser's private file system (OPFS) as they arrive, from a
-worker, so large files go to disk instead of memory. When the file is complete, the page
-asks whether to **Save to computer** (a normal browser download) or **Discard** it. Browsers
-without OPFS keep the download in memory, up to 1 GB. The page checks the browser's storage
-quota before it starts, and suggests the app when a file won't fit.
+worker, in 4 MB batches; when more than 32 MB is waiting for the worker, the page stops reading
+from the network until the disk catches up. When the file is complete, the page asks whether to
+**Save to computer** (a normal browser download) or **Discard** it. Browsers without OPFS keep
+the download in memory, up to 1 GB (folders included: their size isn't known up front, so the cap
+is enforced as bytes arrive). The page checks the browser's storage quota before it starts, and
+suggests the app when a file won't fit.
+
+Folders download as a zip made on the fly, with no length up front. A stream error is reported as
+a failed download (with **Try again**), and a clean end is only accepted if the zip ends with its
+end-of-central-directory record; otherwise the partial zip is discarded.
+
+### Security
+
+- **Shared content never runs in this origin.** Previews are limited to images, audio and video
+  (no autoplay), PDF in an `<iframe sandbox="">` (no scripts, opaque origin; after download only),
+  and text shown as text (`textContent` in a `<pre>`). HTML, SVG, XML and JS are shown as text.
+  Everything else gets a download button only. Blob and stream responses never carry an active
+  MIME type, and stream responses add `Content-Security-Policy: sandbox` and `nosniff`.
+- **Executables and scripts** (`.exe .msi .ps1 .vbs .js .jar .dmg .pkg .deb .apk .html .svg .lnk
+  .reg .hta …`) show a warning before download; they aren't blocked.
+- **CSP** (`<meta http-equiv="Content-Security-Policy">` in `d/index.html` and `index.html`):
+  `script-src 'self'`, no inline scripts; `d/` also has no inline styles. `connect-src` allows
+  only the signaling directory (`https://*.libp2p.direct:5443`), the relay's WSS
+  (`wss://*.libp2p.direct:5003`) and the GitHub API. **If the relay moves to another domain or
+  port, update `connect-src` together with `enidor-config`.**
+- **Service worker streams** (`d/--enidor-stream--/<tab session>/<path>`) are answered only by the
+  tab whose session ID is in the URL. Range requests support `bytes=a-b`, `bytes=a-` and
+  `bytes=-n`; unsatisfiable ranges get a 416.
+- **PIN-protected rooms** ask for the PIN in a form (Enter submits, numeric keypad on phones); a
+  wrong PIN says so, and a lost connection is reported instead of hanging.
 
 The sharer sees the visitor as `Web guest · Chrome on macOS` (or similar) in their Activity
 Monitor and audit log.
@@ -131,16 +185,18 @@ The `enidor-config` block in `d/index.html`:
 }
 ```
 
-While either field is empty, the page doesn't try to connect. It shows the code and walks
-the visitor through opening it in the app instead (**Join a Guest Room**). **It ships
-empty**, because the current servers can't be reached from a browser yet:
+While either field is empty, the page doesn't try to connect. It walks the visitor through
+opening the room in the app instead (**Join a Guest Room**).
 
-### What the servers need first
+### The relay side
 
-Checked against the live server (`148.113.58.51`) on 2026-09-28. The signaling server already
-does its part: it sends CORS headers for `https://hermesnetdev.github.io`, requires the
-`X-Enidor-Auth` header, and has endpoints for a WebRTC handshake
-(`POST /room/{code}/offer`, `GET /room/{code}/offers`, `POST|GET /room/{code}/answer`).
+The relay (`enidor_relay`, see its README) serves the directory over HTTPS on `:5443` and
+browsers' WebSockets over WSS on `:5003`, both with an automatic `*.libp2p.direct` certificate.
+The page only uses unauthenticated, rate-limited endpoints (`GET /link/resolve/{id}`,
+`GET /room/{code}`). Everything that changes a room or link is signed by the sharer's libp2p key;
+there is no shared secret any more.
+
+*The rest of this section is the original design note, kept for history.*
 
 The relay's peer ID is now `12D3KooWECv999C2QCGZ34TN2bWMDmMoKERL8EUDcEDud24u6eJ2`. It changes
 on every restart unless the relay saves its key, and an app built against an old one can't reach
@@ -188,16 +244,16 @@ relay.example.com {
 }
 ```
 
-The relay's limits can stay as they are. It hands out go-libp2p's defaults, 128 KiB and
-2 minutes per relayed connection, which is plenty for a WebRTC handshake. They only matter for
-the fallback: on a network that blocks hole punching, files bigger than the cap can't come
-through the relay. Raising `relay.Resources.Limit` would let them, at the cost of relay
-bandwidth for every such download.
+The relay only introduces peers: it carries a browser's WebRTC handshake, or two apps' hole
+punching, a few KB each. It caps every relayed connection at 128 KiB and 2 minutes
+(`enidor_relay/main.go`), so it can't carry files or messages even for a client that tries, and
+the app refuses any such request that arrives over the relay (`handleDirect` in
+`internal/core/node.go`). Between two apps, as between an app and a browser, data goes peer to
+peer or not at all.
 
-The desktop app needs the WebRTC support in From_project_1 (`internal/core/webrtc`, switched
-on in `internal/core/node.go`). Apps without it still work, through the fallback. One small
-addition would help: a **Copy web link** button next to the room code, copying
-`…/d/#<code>`.
+The desktop app needs the WebRTC support in `internal/core/webrtc`, switched on in
+`internal/core/node.go`. Older apps without it can't serve the page, since there's no relay
+fallback any more; the page shows "Couldn't connect directly" for them.
 
 ### Updating the libp2p bundle
 
@@ -223,12 +279,14 @@ go run ./cmd/receive-harness -rooms 123456=/path/to/a/folder
 ```
 
 Copy the printed `SIGNAL` and `RELAY_WS` into `enidor-config` (in a copy of the site, or
-temporarily), serve the site with `python3 -m http.server 8000`, and open
-`http://localhost:8000/d/#123456`.
+temporarily), serve the site with `python3 -m http.server 8000`, create a share link for the room,
+and open `http://localhost:8000/d/?link=<link id>`. A local rig on `http://`/`ws://` URLs also
+needs those origins added to `connect-src` in the CSP for the test (and the relay run with
+`ENIDOR_DEV=1` for CORS).
 
-The rig's relay uses the same 128 KiB limit as production, so a big file only finishes if it
-went over WebRTC. Its log shows `via=webrtc` for each request that did. Useful flags:
-- `-webrtc=false` exercises the relay fallback. Add `-limit-data 0` to lift the relay's cap.
+The page never downloads over the relay, so every request in the rig's log should show
+`via=webrtc`. Useful flags:
+- `-webrtc=false` shows the "Couldn't connect directly" message, since there's no fallback.
 - `-drop-first 7340032` cuts the first transfer at 7 MB, to exercise resume.
 - `-v` logs the WebRTC handshake.
 

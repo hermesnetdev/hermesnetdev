@@ -1,10 +1,12 @@
 // The receive page (d/): downloads a Guest Room share straight from the sharer's computer.
 //
 // It speaks the same protocol as the desktop app (From_project_1/internal/core/node.go):
-//   1. GET {signal}/{code}         → the sharer's relayed multiaddr; only its peer ID is used
+//   0. GET {signal-base}/link/resolve/{link} → { room_code, peer_id }: the sharer the link was made by
+//   1. GET {signal}/{code}         → the sharer's relayed multiaddr; its peer ID must be that sharer
 //   2. dial {relay}/p2p-circuit/webrtc/p2p/{peer}: the relay (reached over WSS or WebTransport)
-//      carries only a WebRTC handshake, then both sides hole-punch to a direct connection. If the
-//      networks won't allow that, it falls back to {relay}/p2p-circuit/p2p/{peer}, through the relay.
+//      carries only a WebRTC handshake, then both sides hole-punch to a direct connection. File
+//      data only ever travels over that direct connection, never through the relay: if no direct
+//      path can be found, the page says so instead of falling back.
 //   3. /streamfs/meta/1.2.0        → "code\nsubPath\nguestName\n", answered with a JSON FileList
 //   4. /streamfs/data/1.2.0        → "code\npath\nguestName\ndownload\n" + int64 offset + int64 length
 //                                    (big-endian), answered with the raw bytes
@@ -20,16 +22,42 @@ const PROTOCOL_META = '/streamfs/meta/1.2.0';
 const PROTOCOL_DATA = '/streamfs/data/1.2.0';
 
 const LOOKUP_TIMEOUT_MS = 10_000;
-const DIRECT_TIMEOUT_MS = 15_000;
-const DIAL_TIMEOUT_MS = 25_000;
+// Each attempt at a direct connection gets longer: the first usually connects in a few seconds,
+// and a slow STUN server or a router busy opening a mapping can make the next one take longer.
+const DIRECT_ATTEMPT_TIMEOUTS_MS = [20_000, 30_000, 45_000];
+const STREAM_OPEN_TIMEOUT_MS = 20_000;
 const LISTING_TIMEOUT_MS = 45_000;
 const MAX_LISTING_BYTES = 32 * 1024 * 1024;
 const MAX_STALLED_ATTEMPTS = 8; // same as the app: give up after 8 retries in a row that moved no bytes
+const RETRY_BASE_MS = 500;
+const RETRY_MAX_MS = 8_000;
 const WRITE_BATCH_BYTES = 4 * 1024 * 1024;
+const STREAM_BUFFER_BYTES = 16 * 1024 * 1024; // how far video and audio previews read ahead
 const MEMORY_LIMIT_BYTES = 1024 * 1024 * 1024; // only used when the browser has no private file system
+const MAX_INFLIGHT_WRITE_BYTES = 32 * 1024 * 1024; // bytes handed to the storage worker but not yet on disk
+const RESOLVE_TIMEOUT_MS = 15_000;
+const TEXT_PREVIEW_BYTES = 256 * 1024;
+const SW_STREAM_PREFIX = '--enidor-stream--';
+// Identifies this tab to the service worker, so a stream request is only ever answered by the
+// page that made it, never by another open share.
+const STREAM_SESSION = crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 const OPFS_DIR = 'enidor-downloads';
 const OPFS_STALE_MS = 60 * 60 * 1000;
 const OS_JUNK = new Set(['.DS_Store', 'Thumbs.db', 'desktop.ini']);
+
+// STUN only, and never TURN: a TURN server would relay the data, which is exactly what the page
+// must not do. These match the app's (internal/core/webrtc DefaultICEServers).
+const RTC_CONFIGURATION = {
+  iceServers: [{
+    urls: [
+      'stun:stun.l.google.com:19302',
+      'stun:global.stun.twilio.com:3478',
+      'stun:stun.cloudflare.com:3478',
+      'stun:stun.services.mozilla.com:3478',
+    ],
+  }],
+  iceTransportPolicy: 'all',
+};
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -72,8 +100,21 @@ function icon(name, cls = '') {
   return span;
 }
 
-function isExecutable(name) {
-  return /^(exe|sh|bat|cmd|app|dmg|apk|msi|bin|jar)$/i.test((name || '').split('.').pop());
+// Files that run code when opened, or that browsers render as active content. They can still be
+// downloaded, but only after a warning, and they are never previewed as anything but text.
+const RISKY_EXTENSIONS = new Set([
+  'exe', 'com', 'scr', 'cpl', 'msi', 'msix', 'msp', 'appx', 'appxbundle', 'bat', 'cmd', 'ps1', 'psm1',
+  'vbs', 'vbe', 'js', 'jse', 'wsf', 'wsh', 'hta', 'lnk', 'reg', 'jar', 'sh', 'command', 'app', 'pkg',
+  'dmg', 'deb', 'rpm', 'appimage', 'apk', 'bin', 'html', 'htm', 'xhtml', 'svg', 'mht', 'mhtml',
+]);
+
+function extensionOf(name) {
+  const parts = String(name || '').toLowerCase().split('.');
+  return parts.length > 1 ? parts.pop() : '';
+}
+
+function isRisky(name) {
+  return RISKY_EXTENSIONS.has(extensionOf(name));
 }
 
 function getMimeType(name) {
@@ -81,15 +122,29 @@ function getMimeType(name) {
   const types = {
     'mp4': 'video/mp4', 'mkv': 'video/x-matroska', 'webm': 'video/webm', 'mov': 'video/quicktime', 'avi': 'video/x-msvideo',
     'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'ogg': 'audio/ogg', 'flac': 'audio/flac', 'm4a': 'audio/mp4',
-    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp', 'svg': 'image/svg+xml',
+    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp', 'avif': 'image/avif', 'bmp': 'image/bmp',
     'pdf': 'application/pdf',
-    'txt': 'text/plain', 'csv': 'text/csv', 'md': 'text/markdown', 'json': 'application/json', 'html': 'text/html', 'css': 'text/css', 'js': 'text/javascript',
+    // Never an active type (html, svg, xml, js…): shared content must not run in this origin.
+    'txt': 'text/plain', 'csv': 'text/plain', 'md': 'text/plain', 'json': 'text/plain', 'html': 'text/plain', 'htm': 'text/plain',
+    'svg': 'text/plain', 'xml': 'text/plain', 'xhtml': 'text/plain', 'css': 'text/plain', 'js': 'text/plain', 'mjs': 'text/plain',
     'doc': 'application/msword', 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'xls': 'application/vnd.ms-excel', 'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'ppt': 'application/vnd.ms-powerpoint', 'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'zip': 'application/zip', 'rar': 'application/vnd.rar', '7z': 'application/x-7z-compressed', 'tar': 'application/x-tar', 'gz': 'application/gzip'
   };
   return types[ext] || 'application/octet-stream';
+}
+
+// What, if anything, the page may preview. Only passive formats: images, audio, video, PDF (in a
+// sandboxed frame) and text (as text, never as markup).
+function previewKind(name) {
+  const ext = extensionOf(name);
+  if (/^(jpe?g|png|gif|webp|avif|bmp)$/.test(ext)) return 'image';
+  if (/^(mp3|wav|ogg|oga|m4a|aac|opus|flac)$/.test(ext)) return 'audio';
+  if (/^(mp4|m4v|webm|mov|ogv)$/.test(ext)) return 'video';
+  if (ext === 'pdf') return 'pdf';
+  if (/^(txt|text|log|md|markdown|csv|tsv|json|xml|ya?ml|toml|ini|conf|cfg|srt|vtt|html?|xhtml|svg|css|m?js|ts|py|go|rs|java|c|h|cpp|sh)$/.test(ext)) return 'text';
+  return null;
 }
 
 function kindOf(item) {
@@ -141,6 +196,12 @@ function withTimeout(signal, ms) {
   return signal ? AbortSignal.any([signal, timeout]) : timeout;
 }
 
+// Exponential backoff with jitter, so many visitors retrying at once don't move in lockstep.
+function backoff(attempt) {
+  const ms = Math.min(RETRY_MAX_MS, RETRY_BASE_MS * 2 ** attempt);
+  return ms / 2 + Math.random() * (ms / 2);
+}
+
 // A chunk from a libp2p stream is either a Uint8Array or a Uint8ArrayList of them.
 function segments(chunk) {
   return ArrayBuffer.isView(chunk) ? [chunk] : chunk;
@@ -160,20 +221,33 @@ function readConfig() {
   }
 }
 
-// Share links look like d/#482913; d/?c=482913 and d/?code=482913 work too.
-function readCode() {
-  let hash = location.hash.slice(1);
+const PEER_ID_RE = /^[1-9A-HJ-NP-Za-km-z]{40,80}$/;
+
+// Share links look like d/?link=<id>, optionally with #peer=<sharer's peer ID> (which then must
+// match). d/#<id> works too. Old 6-digit room codes (d/#482913) are recognised only to explain
+// that they no longer work.
+function readLink() {
+  const params = new URLSearchParams(location.search);
+  const rawHash = location.hash.slice(1);
+  const hashParams = rawHash.includes('=') ? new URLSearchParams(rawHash) : null;
+  let hash = hashParams ? '' : rawHash;
   try {
     hash = decodeURIComponent(hash);
   } catch {
     // leave it as typed
   }
-  const params = new URLSearchParams(location.search);
-  for (const raw of [hash, params.get('c'), params.get('code'), params.get('link')]) {
+  let id = null;
+  let legacy = false;
+  for (const raw of [hashParams?.get('link'), params.get('link'), hash, params.get('c'), params.get('code')]) {
     const clean = (raw || '').replace(/[\s.-]/g, '');
-    if (/^[0-9a-zA-Z]{12,24}$/.test(clean)) return clean;
+    if (/^[0-9a-zA-Z]{12,64}$/.test(clean)) {
+      id = clean;
+      break;
+    }
+    if (/^\d{6}$/.test(clean)) legacy = true;
   }
-  return null;
+  const peer = (hashParams?.get('peer') || params.get('peer') || '').trim();
+  return { id, legacy: !id && legacy, peer: PEER_ID_RE.test(peer) ? peer : '' };
 }
 
 // Shown to the sharer in their Activity Monitor and audit log.
@@ -197,7 +271,7 @@ function guestName() {
 class ShareError extends Error {
   constructor(kind, message, cause) {
     super(message || kind, { cause });
-    this.kind = kind; // not-found | lookup-failed | offline | unreachable | closed | blocked | too-big | stalled | storage
+    this.kind = kind; // not-found | lookup-failed | busy | offline | unreachable | no-direct | closed | too-big | stalled | storage | truncated | mismatch
   }
 }
 
@@ -213,15 +287,16 @@ class Session {
     this.guest = guestName();
     this.node = null;
     this.conn = null;
-    this.route = null; // 'direct' or 'relay'
-    this.directBlocked = false;
+    this.connecting = null;
+    this.state = 'idle'; // idle | connecting | direct | reconnecting
+    this.onState = null;
     this.pin = '';
   }
 
   async start() {
     const allowed = this.relays;
     this.node = await createLibp2p({
-      transports: [webSockets(), webTransport(), webRTC(), circuitRelayTransport()],
+      transports: [webSockets(), webTransport(), webRTC({ rtcConfiguration: RTC_CONFIGURATION }), circuitRelayTransport()],
       connectionEncrypters: [noise()],
       streamMuxers: [yamux()],
       services: { identify: identify() },
@@ -230,61 +305,110 @@ class Session {
         denyDialMultiaddr: (ma) => !allowed.some((relay) => ma.toString().startsWith(relay)),
       },
     });
+    // When the direct connection drops, say so, and reconnect before the next request needs it.
+    this.node.addEventListener('connection:close', (evt) => {
+      if (evt.detail !== this.conn) return;
+      this.conn = null;
+      this.setState('reconnecting');
+      this.connect().catch(() => {}); // a running transfer reports its own failure
+    });
+  }
+
+  setState(state) {
+    if (this.state === state) return;
+    this.state = state;
+    this.onState?.(state);
   }
 
   relayConnected() {
     return this.node.getConnections().some((c) => this.relayIds.has(c.remotePeer.toString()));
   }
 
-  // Connects to the sharer: straight to their computer over WebRTC when the networks allow it,
-  // otherwise through the relay. Each relay is tried in turn, the one that worked last first.
-  async connect(signal) {
-    if (this.conn?.status === 'open') return this.conn;
+  // A connection we may move file data over: WebRTC straight to the sharer, not a relay circuit.
+  static isDirect(conn) {
+    const addr = conn.remoteAddr.toString();
+    return conn.status === 'open' && conn.limits == null && /\/webrtc(\/|$)/.test(addr);
+  }
+
+  // Connects straight to the sharer's computer over WebRTC. The relay only carries the handshake.
+  // Concurrent callers share one attempt.
+  connect(signal) {
+    if (this.conn && Session.isDirect(this.conn)) return Promise.resolve(this.conn);
+    if (!this.connecting) {
+      this.setState(this.state === 'direct' || this.state === 'reconnecting' ? 'reconnecting' : 'connecting');
+      this.connecting = this.dialDirect().finally(() => {
+        this.connecting = null;
+      });
+    }
+    if (!signal) return this.connecting;
+    return Promise.race([
+      this.connecting,
+      new Promise((_, reject) => {
+        if (signal.aborted) reject(signal.reason);
+        signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+      }),
+    ]);
+  }
+
+  async dialDirect() {
     const order = this.relays.map((_, i) => (i + this.preferred) % this.relays.length);
     let lastErr;
-    for (const i of order) {
-      for (const route of this.directBlocked ? ['relay'] : ['direct', 'relay']) {
-        const hop = route === 'direct' ? '/webrtc' : '';
-        const target = multiaddr(`${this.relays[i]}/p2p-circuit${hop}/p2p/${this.peerId}`);
+    for (let attempt = 0; attempt < DIRECT_ATTEMPT_TIMEOUTS_MS.length; attempt++) {
+      for (const i of order) {
+        const target = multiaddr(`${this.relays[i]}/p2p-circuit/webrtc/p2p/${this.peerId}`);
         try {
-          this.conn = await this.node.dial(target, {
-            signal: withTimeout(signal, route === 'direct' ? DIRECT_TIMEOUT_MS : DIAL_TIMEOUT_MS),
-            force: route === 'direct', // a relayed connection to the sharer may already exist
+          const conn = await this.node.dial(target, {
+            signal: AbortSignal.timeout(DIRECT_ATTEMPT_TIMEOUTS_MS[attempt]),
+            force: true, // a relayed connection to the sharer may already exist; we want WebRTC
           });
-          this.route = route;
+          if (!Session.isDirect(conn)) {
+            await conn.close().catch(() => {});
+            throw new Error(`not a direct connection: ${conn.remoteAddr}`);
+          }
+          // Noise authenticates the remote key; make sure it is the sharer the link names.
+          if (conn.remotePeer.toString() !== this.peerId) {
+            await conn.close().catch(() => {});
+            throw new ShareError('mismatch', `connected to ${conn.remotePeer} instead of ${this.peerId}`);
+          }
+          this.conn = conn;
           this.preferred = i;
-          return this.conn;
+          this.dropRelayedConnections();
+          this.setState('direct');
+          return conn;
         } catch (err) {
-          if (signal?.aborted) throw signal.reason;
+          if (err instanceof ShareError) throw err;
           lastErr = err;
-          // A network that blocks hole punching will keep blocking it; don't wait on it again.
-          if (route === 'direct') this.directBlocked = true;
+          console.info(`Enidor: direct connection attempt ${attempt + 1} via relay ${i + 1} failed`, err);
         }
       }
+      if (attempt < DIRECT_ATTEMPT_TIMEOUTS_MS.length - 1) await sleep(backoff(attempt + 1));
     }
-    const kind = this.relayConnected() ? 'offline' : 'unreachable';
+    this.setState('idle');
+    // The relay answered but the sharer didn't: offline. The sharer answered the handshake but no
+    // direct path opened: the networks block it. Neither: we couldn't reach the network at all.
+    const kind = !this.relayConnected() ? 'unreachable'
+      : /NO_RESERVATION|no reservation|not connected/i.test(String(lastErr?.message)) ? 'offline' : 'no-direct';
     throw new ShareError(kind, lastErr?.message, lastErr);
   }
 
-  // How many bytes a relayed connection may still carry, if the relay caps it.
-  relayAllowance() {
-    const bytes = this.route === 'relay' ? this.conn?.limits?.bytes : null;
-    return bytes == null ? Infinity : Number(bytes);
+  // The relayed connection to the sharer carried the handshake; once the direct one is up it has
+  // no further use, and closing it means nothing can ever be sent over it.
+  dropRelayedConnections() {
+    for (const c of this.node.getConnections(this.conn.remotePeer)) {
+      if (c !== this.conn) c.close().catch(() => {});
+    }
   }
 
   async open(protocol, signal) {
     for (let attempt = 0; ; attempt++) {
       const conn = await this.connect(signal);
       try {
-        return await conn.newStream(protocol, {
-          signal: withTimeout(signal, DIAL_TIMEOUT_MS),
-          // Relayed connections are "limited" when the relay caps them; the page resumes if one is cut.
-          runOnLimitedConnection: true,
-        });
+        // Never runOnLimitedConnection: a limited connection is a relayed one.
+        return await conn.newStream(protocol, { signal: withTimeout(signal, STREAM_OPEN_TIMEOUT_MS) });
       } catch (err) {
         if (signal?.aborted) throw signal.reason;
-        if (conn.status === 'open' || attempt > 0) throw err;
-        this.conn = null; // it closed under us; connect again
+        if (Session.isDirect(conn) || attempt > 0) throw err;
+        if (this.conn === conn) this.conn = null; // it closed under us; connect again
       }
     }
   }
@@ -300,6 +424,7 @@ class Session {
 
   // Streams [offset, offset + length) of a file into onBytes. Resolves when the sharer closes the
   // stream, which may be early if the connection drops; the caller resumes from what it got.
+  // If onBytes returns a promise, reading pauses until it settles, which backs the sender off.
   async fetchRange(path, offset, length, onBytes, signal) {
     const stream = await this.open(PROTOCOL_DATA, signal);
     const head = encoder.encode(`${this.code}\n${path}\n${this.guest}\n${this.pin}\ndownload\n`);
@@ -314,7 +439,10 @@ class Session {
     try {
       const reading = (async () => {
         for await (const chunk of stream) {
-          for (const bytes of segments(chunk)) onBytes(bytes);
+          for (const bytes of segments(chunk)) {
+            const wait = onBytes(bytes);
+            if (wait) await wait;
+          }
         }
       })();
       stream.send(request);
@@ -322,6 +450,37 @@ class Session {
       await reading;
     } finally {
       signal.removeEventListener('abort', abort);
+    }
+  }
+
+  // Like fetchRange, but keeps going until all `length` bytes are in, resuming from the last byte
+  // received whenever the connection drops. Gives up after MAX_STALLED_ATTEMPTS tries in a row
+  // that move nothing.
+  async fetchAll(path, offset, length, onBytes, signal, onRetry) {
+    let received = 0;
+    let stalled = 0;
+    let lastErr = null;
+    const count = (bytes) => {
+      received += bytes.byteLength;
+      return onBytes(bytes);
+    };
+    while (received < length) {
+      const before = received;
+      try {
+        await this.fetchRange(path, offset + received, length - received, count, signal);
+      } catch (err) {
+        if (signal.aborted) throw signal.reason;
+        // connect() has already retried; another round of reconnects won't do better.
+        if (err instanceof ShareError) throw err;
+        lastErr = err;
+      }
+      if (received >= length) break;
+      stalled = received > before ? 0 : stalled + 1;
+      if (stalled >= MAX_STALLED_ATTEMPTS) {
+        throw new ShareError('stalled', lastErr?.message, lastErr);
+      }
+      onRetry?.();
+      await sleep(backoff(stalled), signal);
     }
   }
 
@@ -371,13 +530,42 @@ async function lookUp(signalUrl, code) {
     throw new ShareError('lookup-failed', err.message, err);
   }
   if (res.status === 404) throw new ShareError('not-found');
+  if (res.status === 429) throw new ShareError('busy');
   if (!res.ok) throw new ShareError('lookup-failed', `directory responded ${res.status}`);
   const addr = (await res.text()).trim();
   const peerId = addr.split('/p2p/').pop();
-  if (!addr.includes('/p2p/') || !/^[1-9A-HJ-NP-Za-km-z]{40,80}$/.test(peerId)) {
+  if (!addr.includes('/p2p/') || !PEER_ID_RE.test(peerId)) {
     throw new ShareError('lookup-failed', 'invalid room record');
   }
   return peerId;
+}
+
+// Resolves a share link to its room code and the sharer's peer ID (recorded by the directory from
+// the sharer's signed request).
+async function resolveLink(signalUrl, id) {
+  const url = `${signalUrl.replace(/\/room\/?$/, '/link/resolve')}/${encodeURIComponent(id)}`;
+  let res;
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(RESOLVE_TIMEOUT_MS), cache: 'no-store' });
+  } catch (err) {
+    const timedOut = err?.name === 'TimeoutError' || err?.name === 'AbortError';
+    throw new ShareError('lookup-failed', timedOut ? 'the directory did not answer in time' : err.message, err);
+  }
+  if (res.status === 404) throw new ShareError('not-found', 'Link not found or expired.');
+  if (res.status === 429) throw new ShareError('busy');
+  if (!res.ok) throw new ShareError('lookup-failed', `directory responded ${res.status}`);
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new ShareError('lookup-failed', 'invalid link record', err);
+  }
+  const roomCode = String(data?.room_code || '');
+  const peerId = String(data?.peer_id || '');
+  if (!/^[0-9A-Za-z_-]{4,64}$/.test(roomCode) || !PEER_ID_RE.test(peerId)) {
+    throw new ShareError('lookup-failed', 'invalid link record');
+  }
+  return { roomCode, peerId };
 }
 
 // ---------- where downloads are kept until the visitor saves them ----------
@@ -434,6 +622,8 @@ class OpfsSink {
     this.error = null;
     this.pending = new Map();
     this.nextId = 1;
+    this.inflight = 0; // bytes posted to the worker and not yet acknowledged
+    this.drained = null; // { promise, resolve } while a writer waits for the worker to catch up
     worker.onmessage = ({ data }) => {
       const err = data.error && Object.assign(new Error(data.error.message), { name: data.error.name });
       const call = this.pending.get(data.id);
@@ -449,7 +639,16 @@ class OpfsSink {
       this.error ??= new Error(evt.message || 'storage worker failed');
       for (const call of this.pending.values()) call.reject(this.error);
       this.pending.clear();
+      this.inflight = 0;
+      this.wake();
     };
+  }
+
+  wake() {
+    if (this.drained && (this.error || this.inflight <= MAX_INFLIGHT_WRITE_BYTES / 2)) {
+      this.drained.resolve();
+      this.drained = null;
+    }
   }
 
   call(msg) {
@@ -460,9 +659,30 @@ class OpfsSink {
     });
   }
 
-  // Takes ownership of buffer (it's transferred to the worker).
+  // Takes ownership of buffer (it's transferred to the worker). Returns a promise when too much is
+  // waiting to be written, so the caller stops reading from the network until the disk catches up.
   write(buffer, length, at) {
-    this.worker.postMessage({ op: 'write', buffer: buffer.buffer, length, at }, [buffer.buffer]);
+    const id = this.nextId++;
+    this.inflight += length;
+    const settle = () => {
+      this.inflight -= length;
+      this.wake();
+    };
+    this.pending.set(id, {
+      resolve: settle,
+      reject: (err) => {
+        this.error ??= err; // usually storage filled up
+        settle();
+      },
+    });
+    this.worker.postMessage({ op: 'write', id, buffer: buffer.buffer, length, at }, [buffer.buffer]);
+    if (this.inflight <= MAX_INFLIGHT_WRITE_BYTES) return null;
+    if (!this.drained) {
+      let resolve;
+      const promise = new Promise((r) => { resolve = r; });
+      this.drained = { promise, resolve };
+    }
+    return this.drained.promise;
   }
 
   async finish() {
@@ -485,10 +705,12 @@ class MemorySink {
     this.parts = [];
     this.error = null;
     this.name = null;
+    this.inMemory = true;
   }
 
   write(buffer, length) {
     this.parts.push(buffer.subarray(0, length));
+    return null;
   }
 
   async finish() {
@@ -538,24 +760,52 @@ class Batcher {
     this.at = 0;
   }
 
+  // Returns a promise if the sink wants the caller to slow down.
   push(bytes) {
     let offset = 0;
+    let wait = null;
     while (offset < bytes.length) {
       const n = Math.min(bytes.length - offset, this.size - this.length);
       this.buffer.set(bytes.subarray(offset, offset + n), this.length);
       this.length += n;
       offset += n;
-      if (this.length === this.size) this.flush();
+      if (this.length === this.size) wait = this.flush() || wait;
     }
+    return wait;
   }
 
   flush() {
-    if (!this.length) return;
-    this.sink.write(this.buffer, this.length, this.at);
+    if (!this.length) return null;
+    const wait = this.sink.write(this.buffer, this.length, this.at);
     this.at += this.length;
     this.buffer = new Uint8Array(this.size);
     this.length = 0;
+    return wait;
   }
+}
+
+// A zip ends with an end-of-central-directory record (PK\x05\x06) in its last 64 KiB + 22 bytes.
+// Folder downloads are zipped on the fly with no length up front, so this is how we tell a
+// complete archive from one cut off mid-stream.
+async function zipLooksComplete(blob) {
+  const EOCD = 22;
+  if (blob.size < EOCD) return false;
+  const tailStart = Math.max(0, blob.size - (EOCD + 0xffff));
+  const tail = new Uint8Array(await blob.slice(tailStart).arrayBuffer());
+  const view = new DataView(tail.buffer);
+  for (let i = tail.length - EOCD; i >= 0; i--) {
+    if (view.getUint32(i, true) !== 0x06054b50) continue;
+    const commentLength = view.getUint16(i + 20, true);
+    if (i + EOCD + commentLength !== tail.length) continue; // the record must end the file
+    const cdSize = view.getUint32(i + 12, true);
+    const cdOffset = view.getUint32(i + 16, true);
+    if (cdSize === 0xffffffff || cdOffset === 0xffffffff) {
+      // Zip64: the real values live in the zip64 record, located just before this one.
+      return i >= 20 && view.getUint32(i - 20, true) === 0x07064b50;
+    }
+    return cdOffset + cdSize === tailStart + i;
+  }
+  return false;
 }
 
 // Rolling transfer speed over the last few seconds.
@@ -580,8 +830,9 @@ class Meter {
 // ---------- page state ----------
 
 const config = readConfig();
-const linkId = readCode();
+const link = readLink();
 let code = null;
+let expectedPeer = link.peer; // the sharer's peer ID, from the link fragment or the link record
 const ui = {
   kicker: document.getElementById('rx-kicker'),
   title: document.getElementById('rx-title'),
@@ -647,26 +898,39 @@ function openInAppSteps() {
   );
 }
 
+
 function showError(err) {
   console.warn('Enidor:', err);
-  const retry = button('Try again', 'btn-primary', () => location.reload());
+  const retry = typeof err?.retry === 'function'
+    ? button('Try again', 'btn-primary', err.retry)
+    : button('Try again', 'btn-primary', () => location.reload());
   const kind = err instanceof ShareError ? err.kind : 'unknown';
-  if (kind === 'not-found' || kind === 'closed') {
+  if (kind === 'not-found' || kind === 'closed' || kind === 'mismatch') {
     ui.title.textContent = 'This share isn’t available.';
     ui.lede.hidden = true;
   }
   switch (kind) {
     case 'not-found':
       return showMessage({
-        title: 'No share uses this code',
-        body: code 
-          ? `Nothing is being shared under ${spacedCode(code)}. The link may be mistyped, or the room was never opened. Ask the sender to check the code.`
-          : `This link is invalid or the room was never opened. Ask the sender to check their link.`,
+        title: 'No share uses this link',
+        body: 'This link is invalid, expired, or the room was never opened. Ask the sender to check their link.',
       });
     case 'closed':
       return showMessage({
         title: 'This room is closed',
         body: 'The sender stopped sharing this folder, or it’s no longer on their computer. Ask them to share it again.',
+      });
+    case 'mismatch':
+      return showMessage({
+        title: 'This link doesn’t lead to its sender',
+        body: 'The computer answering for this share isn’t the one the link was made for, so nothing was downloaded. Ask the sender for a new link.',
+      });
+    case 'busy':
+      return showMessage({
+        glyph: 'offline',
+        title: 'Too many attempts',
+        body: 'The Enidor directory is limiting requests from your network. Wait a minute and try again.',
+        actions: [retry],
       });
     case 'offline':
       return showMessage({
@@ -683,18 +947,20 @@ function showError(err) {
         body: 'Check your internet connection and try again. Some work and school networks block peer-to-peer connections — if that’s the case here, the Enidor app may still get through.',
         actions: [retry, appLink('Get the app', 'btn-secondary')],
       });
-    case 'blocked':
+    case 'no-direct':
       return showMessage({
         glyph: 'offline',
-        title: 'Your network blocks direct connections',
-        body: 'Files come straight from the sender’s computer, and the network you’re on won’t allow a direct link to it. Try another network, like a phone hotspot, or open the room in the Enidor app.',
-        actions: [appLink('Get Enidor'), backButton()],
+        title: 'Couldn’t connect directly to the sender',
+        body: 'Files only ever travel straight from the sender’s computer to yours, never through a server, and the networks on both ends wouldn’t open a direct path this time. Try again, switch networks (a phone hotspot usually works), or ask the sender to enable UPnP on their router.',
+        actions: [retry, appLink('Get the app', 'btn-secondary')],
       });
     case 'too-big': {
       const { needed, available } = err.cause || {};
       return showMessage({
         title: 'Too big for this browser',
-        body: `This file is ${formatBytes(needed)}, and your browser can hold about ${formatBytes(available)}. The Enidor app downloads straight to disk, with no size limit.`,
+        body: needed
+          ? `This download is at least ${formatBytes(needed)}, and your browser can hold about ${formatBytes(available)}. The Enidor app downloads straight to disk, with no size limit.`
+          : `This download is more than your browser can hold (about ${formatBytes(available)}). The Enidor app downloads straight to disk, with no size limit.`,
         actions: [appLink('Get Enidor'), backButton()],
         extra: openInAppSteps(),
       });
@@ -710,6 +976,12 @@ function showError(err) {
         title: 'The transfer stopped',
         body: 'The connection to the sender kept dropping, so the download was stopped. Try again, or use the Enidor app, which can resume later.',
         actions: [backButton('Try again', 'btn-primary'), appLink('Get the app', 'btn-secondary')],
+      });
+    case 'truncated':
+      return showMessage({
+        title: 'The folder download was cut off',
+        body: 'The connection ended before the whole folder arrived, so the incomplete zip was discarded. Try again, or use the Enidor app.',
+        actions: [retry, backButton()],
       });
     default:
       return showMessage({
@@ -794,7 +1066,7 @@ function renderListing() {
   });
 
   setCard(
-    el('div', { style: 'display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;' },
+    el('div', { class: 'rx-list-head' },
       crumbs(),
       folderDownloadBtn
     ),
@@ -804,44 +1076,100 @@ function renderListing() {
   );
 }
 
+// ---------- previews ----------
+//
+// Shared content never runs in this page's origin. Only passive formats are previewed: images,
+// audio and video (never autoplaying), PDF inside a fully sandboxed frame (no scripts, opaque
+// origin), and text as text (textContent in a <pre>, never parsed as markup). Everything else
+// gets a download button only.
+
+function streamUrl(item) {
+  return new URL(`./${SW_STREAM_PREFIX}/${STREAM_SESSION}/${encodeURIComponent(item.path)}`, location.href).href;
+}
+
+// src: a URL for media; readText: () => Promise<{ text, truncated }> for text previews.
+function buildPreview(item, src, readText, { allowPdf = true } = {}) {
+  const kind = previewKind(item.name);
+  const noCopy = (e) => e.preventDefault();
+  switch (kind) {
+    case 'image':
+      return el('img', { src, alt: item.name, class: 'rx-img', oncontextmenu: noCopy });
+    case 'audio':
+      return el('audio', { src, controls: true, preload: 'metadata', controlslist: 'nodownload', class: 'rx-audio', oncontextmenu: noCopy });
+    case 'video': {
+      const video = el('video', { src, controls: true, preload: 'metadata', playsinline: true, controlslist: 'nodownload', class: 'rx-media', oncontextmenu: noCopy });
+      video.addEventListener('error', () => {
+        video.replaceWith(el('div', { class: 'rx-preview-fallback' },
+          icon('video', 'rx-big'),
+          el('p', null, 'Your browser can’t preview this video format.'),
+          el('p', { class: 'rx-note' }, 'Download the file to watch it.'),
+        ));
+      }, { once: true });
+      return video;
+    }
+    case 'pdf':
+      if (!allowPdf) return null;
+      // sandbox="" : no scripts, no forms, no popups, opaque origin.
+      return el('iframe', { src, sandbox: '', referrerpolicy: 'no-referrer', title: item.name, class: 'rx-frame' });
+    case 'text': {
+      if (!readText) return null;
+      const pre = el('pre', { class: 'rx-text' }, 'Loading preview…');
+      readText().then(({ text, truncated }) => {
+        pre.textContent = truncated ? `${text}\n\n… (preview shows the first ${formatBytes(TEXT_PREVIEW_BYTES)})` : text;
+      }, () => {
+        pre.textContent = 'Preview unavailable. Download the file to open it.';
+      });
+      return pre;
+    }
+    default:
+      return null;
+  }
+}
+
+function decodeText(bytes, truncated) {
+  return { text: new TextDecoder('utf-8', { fatal: false }).decode(bytes), truncated };
+}
+
+// Reads the start of a not-yet-downloaded file through the service worker.
+function streamText(item) {
+  return async () => {
+    const res = await fetch(streamUrl(item), { headers: { Range: `bytes=0-${TEXT_PREVIEW_BYTES - 1}` } });
+    if (!res.ok) throw new Error(`preview responded ${res.status}`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    return decodeText(bytes.subarray(0, TEXT_PREVIEW_BYTES), Number(item.size) > TEXT_PREVIEW_BYTES);
+  };
+}
+
+function blobText(file) {
+  return async () => decodeText(new Uint8Array(await file.slice(0, TEXT_PREVIEW_BYTES).arrayBuffer()), file.size > TEXT_PREVIEW_BYTES);
+}
+
 // ---------- single file preview & downloading ----------
 
+function riskyWarning(item) {
+  return el('p', { class: 'rx-warning', role: 'note' },
+    icon('alert'),
+    el('span', null, `“${item.name}” is a type of file that can run programs or scripts on your computer. Only open it if you trust the sender and expected this file.`),
+  );
+}
+
 function showSingleFile(item) {
-  if (isExecutable(item.name)) {
-    showError(new ShareError('blocked', 'Executable files are not allowed for security reasons.'));
-    return;
-  }
-  
-  const kind = kindOf(item);
-  let preview = null;
-  const preventCopy = (e) => e.preventDefault();
-  const streamUrl = new URL(`./--enidor-stream--/${encodeURIComponent(item.path)}`, location.href).href;
-  
-  if (kind === 'video') {
-    preview = el('video', { src: streamUrl, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px; background: #000;' });
-    preview.onerror = () => {
-      const fallback = el('div', { style: 'padding: 20px; background: var(--surface-2); border-radius: 8px; text-align: center;' },
-        icon('video', 'rx-big'),
-        el('p', { style: 'margin-top: 10px; color: var(--text);' }, 'Your browser does not support previewing this video format (e.g., MKV).'),
-        el('p', { style: 'color: var(--muted); font-size: 0.9rem;' }, 'Please download the file to view it.')
-      );
-      preview.replaceWith(fallback);
-    };
-  } else if (kind === 'audio') {
-    preview = el('audio', { src: streamUrl, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'width: 100%;' });
-  } else if (kind === 'image') {
-    preview = el('img', { src: streamUrl, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
-  } else if (!item.name.endsWith('.zip')) {
-    preview = el('iframe', { src: streamUrl, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
-  }
-  
+  const risky = isRisky(item.name);
+  // Streaming previews need the service worker to be in control of this page.
+  const canStream = !!navigator.serviceWorker?.controller;
+  // PDFs are only previewed from the finished download: a sandboxed frame can't be served by
+  // the service worker.
+  const preview = canStream ? buildPreview(item, streamUrl(item), streamText(item), { allowPdf: false }) : null;
+
   setCard(
-    el('div', { class: 'rx-single', style: preview ? 'width: 100%; max-width: 800px;' : '' },
-      !preview && icon(kind, 'rx-big accent'),
+    el('div', { class: `rx-single${preview ? ' rx-wide' : ''}` },
+      !preview && icon(kindOf(item), 'rx-big accent'),
       el('h2', { class: 'rx-card-title' }, item.name),
-      preview ? el('div', { class: 'rx-preview', style: 'margin: 20px 0; text-align: center;' }, preview) : null,
+      el('p', { class: 'rx-note' }, formatBytes(item.size)),
+      risky && riskyWarning(item),
+      preview ? el('div', { class: 'rx-preview' }, preview) : null,
       el('div', { class: 'rx-actions' },
-        button('Download', 'btn-primary', () => startDownload(item)),
+        button(risky ? 'Download anyway' : 'Download', 'btn-primary', () => startDownload(item)),
         singleFile ? null : button('Back', 'btn-ghost', () => renderListing())
       )
     )
@@ -850,18 +1178,9 @@ function showSingleFile(item) {
 
 async function startDownload(item) {
   if (transfer) return;
-  
-  if (isExecutable(item.name)) {
-    showError(new ShareError('blocked', 'Executable files are not allowed for security reasons.'));
-    return;
-  }
-  
+
   discardStored();
   const total = Math.max(0, Number(item.size) || 0);
-  if (total > session.relayAllowance()) {
-    showError(new ShareError('blocked'));
-    return;
-  }
   const controller = new AbortController();
   transfer = { controller, sink: null };
 
@@ -877,11 +1196,12 @@ async function startDownload(item) {
   transfer.sink = sink;
 
   const isZip = !!item.is_dir;
-  const batch = new Batcher(sink, isZip ? 1024 * 1024 * 100 : total); // large batch for unknown size
+  const batch = new Batcher(sink, isZip ? WRITE_BATCH_BYTES : total);
   const meter = new Meter(0);
   let received = 0;
 
-  const bar = el('span', { style: 'width:0%' });
+  const bar = el('span');
+  bar.style.width = '0%';
   const stats = el('p', { class: 'rx-stats' }, 'Connecting…');
   const note = el('p', { class: 'rx-note' }, 'Saving into your browser first — keep this tab open. You’ll choose where it goes when it’s done.');
   setCard(
@@ -902,16 +1222,16 @@ async function startDownload(item) {
   const paint = () => {
     const pct = total ? Math.min(100, (received / total) * 100) : (isZip ? 100 : 0);
     bar.style.width = isZip ? '100%' : `${pct}%`;
-    if (isZip) bar.classList.add('pulse-bar'); // we don't have CSS for this, but just in case
+    if (isZip) bar.classList.add('pulse-bar');
     bar.parentElement.setAttribute('aria-valuenow', String(Math.floor(pct)));
     const speed = meter.speed();
     const parts = [isZip ? `${formatBytes(received)}` : `${formatBytes(received)} of ${formatBytes(total)}`];
-    if (reconnecting) parts.push('reconnecting…');
+    if (reconnecting || session.state === 'reconnecting') parts.push('reconnecting directly…');
     else if (speed > 0) {
       parts.push(`${formatBytes(speed)}/s`);
       if (!isZip) parts.push(formatEta((total - received) / speed));
     }
-    if (!reconnecting && session.route) parts.push(session.route === 'direct' ? 'direct' : 'via relay');
+    if (!reconnecting && session.state === 'direct') parts.push('direct peer-to-peer');
     stats.textContent = parts.filter(Boolean).join(' · ');
     document.title = isZip ? `${formatBytes(received)} · ${item.name}` : `${Math.floor(pct)}% · ${item.name}`;
   };
@@ -920,45 +1240,47 @@ async function startDownload(item) {
   const onBytes = (bytes) => {
     if (reconnecting) reconnecting = false;
     const room = isZip ? bytes.byteLength : total - received;
-    if (room <= 0) return;
+    if (room <= 0) return null;
     const chunk = (!isZip && bytes.byteLength > room) ? bytes.subarray(0, room) : bytes;
-    batch.push(chunk);
+    // A folder has no size up front, so the in-memory cap is enforced as it arrives.
+    if (sink.inMemory && received + chunk.byteLength > MEMORY_LIMIT_BYTES) {
+      controller.abort(new ShareError('too-big', '', { needed: received + chunk.byteLength, available: MEMORY_LIMIT_BYTES }));
+      return null;
+    }
+    const wait = batch.push(chunk);
     received += chunk.byteLength;
     meter.add(received);
     if (sink.error) controller.abort(new ShareError('storage', sink.error.message, sink.error));
+    return wait;
   };
 
   try {
-    let stalled = 0;
-    let lastErr = null;
     if (isZip) {
-      await session.fetchRange(item.path, 0, 0, onBytes, controller.signal);
+      // A folder is zipped on the fly, so there's no length to check and no offset to resume
+      // from: a stream error means the zip is incomplete, and a clean end is verified below.
+      try {
+        await session.fetchRange(item.path, 0, 0, onBytes, controller.signal);
+      } catch (err) {
+        if (controller.signal.aborted) throw controller.signal.reason;
+        if (err instanceof ShareError) throw err;
+        throw new ShareError('truncated', err?.message, err);
+      }
     } else {
-      while (received < total) {
-        const before = received;
-        try {
-          await session.fetchRange(item.path, received, total - received, onBytes, controller.signal);
-        } catch (err) {
-          if (controller.signal.aborted) throw controller.signal.reason;
-          lastErr = err;
-        }
-        if (received >= total) break;
-        stalled = received > before ? 0 : stalled + 1;
-        if (stalled >= MAX_STALLED_ATTEMPTS) {
-          throw lastErr instanceof ShareError && lastErr.kind !== 'offline'
-            ? lastErr
-            : new ShareError('stalled', lastErr?.message, lastErr);
-        }
+      await session.fetchAll(item.path, 0, total, onBytes, controller.signal, () => {
         reconnecting = true;
         paint();
-        await sleep(1000, controller.signal);
-      }
+      });
     }
-    batch.flush();
+    const last = batch.flush();
+    if (last) await last;
     if (sink.error) throw new ShareError('storage', sink.error.message, sink.error);
     paint();
     const file = await sink.finish();
     if (!isZip && file.size !== total) throw new Error(`stored ${file.size} of ${total} bytes`);
+    if (isZip && !(await zipLooksComplete(file))) {
+      await removeStored(sink.name);
+      throw new ShareError('truncated', `zip ended after ${file.size} bytes without its central directory`);
+    }
     stored = { item, file, name: sink.name, url: null };
     transfer = null;
     showReady();
@@ -966,6 +1288,9 @@ async function startDownload(item) {
     transfer = null;
     await sink.discard();
     setHeadline();
+    if (err instanceof ShareError && (err.kind === 'truncated' || err.kind === 'stalled')) {
+      err.retry = () => startDownload(item);
+    }
     if (err?.name === 'AbortError') renderListing();
     else if (err?.name === 'QuotaExceededError' || err?.cause?.name === 'QuotaExceededError') showError(new ShareError('storage'));
     else showError(err);
@@ -979,35 +1304,26 @@ async function startDownload(item) {
 function showReady() {
   const { item, file } = stored;
   document.title = `Ready · ${item.name}`;
-  
+
   if (!stored.url) {
+    // getMimeType never returns an active type (html, svg, js…), so even opened directly this
+    // blob can't run script in our origin.
     const typedFile = new File([file], item.name, { type: getMimeType(item.name) });
     stored.url = URL.createObjectURL(typedFile);
   }
 
-  let preview = null;
-  const kind = kindOf(item);
-  
-  const preventCopy = (e) => e.preventDefault();
-
-  if (kind === 'video') {
-    preview = el('video', { src: stored.url, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px; background: #000;' });
-  } else if (kind === 'audio') {
-    preview = el('audio', { src: stored.url, controls: true, autoplay: true, controlslist: 'nodownload', oncontextmenu: preventCopy, style: 'width: 100%;' });
-  } else if (kind === 'image') {
-    preview = el('img', { src: stored.url, oncontextmenu: preventCopy, style: 'max-width: 100%; max-height: 50vh; border-radius: 8px;' });
-  } else if (!isExecutable(item.name) && !item.is_dir && !item.name.endsWith('.zip')) {
-    preview = el('iframe', { src: stored.url, oncontextmenu: preventCopy, style: 'width: 100%; height: 60vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;' });
-  }
+  const risky = isRisky(item.name);
+  const preview = item.is_dir ? null : buildPreview(item, stored.url, blobText(file));
 
   setCard(
-    el('div', { class: 'rx-message', style: preview ? 'width: 100%; max-width: 800px;' : '' },
+    el('div', { class: `rx-message${preview ? ' rx-wide' : ''}` },
       !preview && icon('check', 'rx-big ok'),
       el('h2', { class: 'rx-card-title' }, preview ? item.name : 'Download complete'),
-      preview ? el('div', { class: 'rx-preview', style: 'margin: 20px 0; text-align: center;' }, preview) : null,
-      !preview && el('p', { class: 'rx-card-body' }, el('strong', { class: 'rx-name' }, item.name), ` (${formatBytes(item.size)}) is ready in your browser. Save it to your computer?`),
+      preview ? el('div', { class: 'rx-preview' }, preview) : null,
+      !preview && el('p', { class: 'rx-card-body' }, el('strong', { class: 'rx-name' }, item.name), ` (${formatBytes(file.size)}) is ready in your browser. Save it to your computer?`),
+      risky && riskyWarning(item),
       el('div', { class: 'rx-actions' },
-        button('Save to computer', 'btn-primary', saveStored),
+        button(risky ? 'Save anyway' : 'Save to computer', 'btn-primary', saveStored),
         button(preview ? 'Close' : 'Discard', 'btn-ghost', () => {
           discardStored();
           renderListing();
@@ -1050,7 +1366,90 @@ function discardStored() {
   removeStored(name);
 }
 
+// ---------- PIN-protected rooms ----------
+
+const PIN_ERRORS = new Set(['pin_required', 'invalid_pin', 'wrong_pin']);
+const PIN_LOCKED = new Set(['pin_locked', 'too_many_attempts']);
+
+// Lists the room root, asking for a PIN while the host requires one. Resolves with the listing;
+// rejects (to the caller's showError) if the connection fails.
+function listWithPin() {
+  return new Promise((resolve, reject) => {
+    const ask = (problem) => {
+      const input = el('input', {
+        type: 'password', id: 'pin-input', class: 'rx-pin-input', inputmode: 'numeric',
+        autocomplete: 'off', placeholder: 'Enter PIN', 'aria-label': 'PIN', required: true, maxlength: '64',
+      });
+      const submit = el('button', { type: 'submit', class: 'btn btn-primary' }, 'Access files');
+      const status = el('p', { class: 'rx-pin-error', role: 'alert' }, problem || '');
+      status.hidden = !problem;
+      const form = el('form', { class: 'rx-pin', novalidate: true },
+        el('label', { for: 'pin-input', class: 'rx-card-body' }, 'This deployment is protected by a PIN.'),
+        input,
+        status,
+        submit,
+      );
+      form.addEventListener('submit', async (evt) => {
+        evt.preventDefault();
+        if (!input.value) {
+          input.focus();
+          return;
+        }
+        submit.disabled = true;
+        input.disabled = true;
+        submit.textContent = 'Verifying…';
+        status.hidden = true;
+        session.pin = input.value;
+        let list;
+        try {
+          list = await session.list('');
+        } catch (err) {
+          reject(err);
+          return;
+        }
+        if (PIN_ERRORS.has(list?.error)) return ask('Wrong PIN. Check it with the sender and try again.');
+        if (PIN_LOCKED.has(list?.error)) return ask('Too many wrong attempts. Wait a few minutes, then try again.');
+        if (list?.error) return reject(new ShareError('closed', String(list.error)));
+        resolve(list);
+      });
+      setCard(
+        el('div', { class: 'rx-message' },
+          icon('alert', 'rx-big accent'),
+          el('h2', { class: 'rx-card-title' }, 'Private deployment'),
+          form,
+        ),
+      );
+      input.focus();
+    };
+
+    session.list('').then((list) => {
+      if (PIN_ERRORS.has(list?.error)) ask('');
+      else if (PIN_LOCKED.has(list?.error)) ask('Too many wrong attempts. Wait a few minutes, then try again.');
+      else if (list?.error) reject(new ShareError('closed', String(list.error)));
+      else resolve(list);
+    }, reject);
+  });
+}
+
 // ---------- boot ----------
+
+// A line under the card that always says how we're connected to the sender.
+const CONN_LABELS = {
+  connecting: 'Connecting straight to the sender’s computer…',
+  direct: 'Connected directly · peer-to-peer, encrypted end to end',
+  reconnecting: 'Connection dropped · reconnecting directly…',
+};
+
+function renderConnState(state) {
+  let line = document.getElementById('rx-conn');
+  if (!line) {
+    line = el('p', { id: 'rx-conn', class: 'rx-conn', role: 'status' });
+    ui.card.after(line);
+  }
+  line.dataset.state = state;
+  line.textContent = CONN_LABELS[state] || '';
+  line.hidden = !CONN_LABELS[state];
+}
 
 function renderCode() {
   if (!code) return;
@@ -1060,23 +1459,19 @@ function renderCode() {
 }
 
 async function main() {
-  if (linkId && !code) {
-    showStatus('Resolving link…');
-    try {
-      const linkUrl = config.signal.replace(/\/room\/?$/, '/link/resolve');
-      const res = await fetch(`${linkUrl}/${linkId}`);
-      if (!res.ok) throw new Error("Link not found or expired.");
-      const data = await res.json();
-      code = data.room_code;
-    } catch (err) {
-      showError(new ShareError('not-found', err.message));
-      return;
-    }
+  if (link.legacy) {
+    ui.title.textContent = 'This link format is no longer supported.';
+    ui.lede.textContent = 'Links with a 6-digit room code stopped working in the browser. Ask the sender for a new share link from the Enidor app.';
+    showMessage({
+      title: 'Ask the sender for a new link',
+      body: 'Or enter the code in the Enidor app to open the room:',
+      extra: openInAppSteps(),
+      actions: [appLink('Get Enidor')],
+    });
+    return;
   }
 
-  renderCode();
-
-  if (!code) {
+  if (!link.id) {
     ui.title.textContent = 'This link is missing its ID.';
     ui.lede.textContent = 'Enidor share links end with a unique link ID. Ask the sender for the full link.';
     showMessage({
@@ -1100,39 +1495,34 @@ async function main() {
     return;
   }
 
+  showStatus('Resolving link…');
+  try {
+    const resolved = await resolveLink(config.signal, link.id);
+    if (expectedPeer && expectedPeer !== resolved.peerId) {
+      throw new ShareError('mismatch', 'link fragment and directory disagree about the sender');
+    }
+    expectedPeer = resolved.peerId;
+    code = resolved.roomCode;
+  } catch (err) {
+    showError(err);
+    return;
+  }
+
+  renderCode();
   sweepOldDownloads();
   showStatus('Finding the sender…', `Room ${spacedCode(code)}`);
   try {
     const peerId = await lookUp(config.signal, code);
+    // The room record must point at the peer the link was made by; the connection itself is
+    // then checked against that ID (Session.dialDirect).
+    if (peerId !== expectedPeer) throw new ShareError('mismatch', 'room record points at a different peer');
     showStatus('Opening an encrypted tunnel…', 'Connecting straight to the sender’s computer.');
-    session = new Session(code, peerId, config.relays);
+    session = new Session(code, expectedPeer, config.relays);
+    session.onState = renderConnState;
     await session.start();
-    const attemptList = async () => {
-      const list = await session.list('');
-      if (list.error === 'pin_required') {
-        return new Promise((resolve) => {
-          ui.card.innerHTML = `
-            <div class="rx-status">
-              <p class="rx-status-text">Private Deployment</p>
-            </div>
-            <div class="rx-card-body" style="text-align: center;">
-              <p style="margin-bottom: 1rem;">This deployment is protected by a PIN.</p>
-              <input type="password" id="pin-input" placeholder="Enter PIN" style="padding: 0.5rem; font-size: 1rem; margin-bottom: 1rem; border-radius: 4px; border: 1px solid var(--border);" />
-              <br/>
-              <button class="btn btn-primary" id="pin-submit">Access Files</button>
-            </div>
-          `;
-          document.getElementById('pin-submit').onclick = async () => {
-            session.pin = document.getElementById('pin-input').value;
-            showStatus('Opening an encrypted tunnel...', 'Verifying PIN...');
-            resolve(await attemptList());
-          };
-        });
-      }
-      return list;
-    };
-    
-    const list = await attemptList();
+    // Connect before asking for the listing, so the listing's timeout doesn't cut the retries short.
+    await session.connect();
+    const list = await listWithPin();
     host = String(list.host_name || '').trim();
     // The app answers an unknown or closed room with an empty list, and an empty folder with none.
     if (Array.isArray(list.files) && list.files.length === 0) {
@@ -1156,13 +1546,13 @@ addEventListener('beforeunload', (evt) => {
 });
 
 addEventListener('hashchange', () => {
-  const next = readCode();
-  if (next && next !== linkId) location.reload();
+  const next = readLink();
+  if (next.id !== link.id || next.peer !== link.peer || next.legacy !== link.legacy) location.reload();
 });
 
 document.addEventListener('click', (evt) => {
-  const link = evt.target.closest?.('[data-scroll]');
-  const target = link && document.getElementById(link.dataset.scroll);
+  const target0 = evt.target.closest?.('[data-scroll]');
+  const target = target0 && document.getElementById(target0.dataset.scroll);
   if (!target) return;
   evt.preventDefault();
   const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1171,64 +1561,111 @@ document.addEventListener('click', (evt) => {
   target.focus({ preventScroll: true });
 });
 
+// ---------- streaming previews through the service worker ----------
+
+// Parses an HTTP Range header against a file of `size` bytes.
+// Returns null to serve the whole file (no header, unknown size, or a multi-range request, which
+// the spec lets us ignore), { start, end } (inclusive) for a satisfiable range, or 'invalid' (416).
+function parseRange(header, size) {
+  if (!header || !(size > 0)) return null;
+  const m = /^\s*bytes\s*=\s*(\d*)\s*-\s*(\d*)\s*$/i.exec(header);
+  if (!m) return /^\s*bytes\s*=.*,/i.test(header) ? null : 'invalid';
+  const [, a, b] = m;
+  if (a === '' && b === '') return 'invalid';
+  if (a === '') {
+    const n = Number(b); // suffix: the last n bytes
+    if (!(n > 0)) return 'invalid';
+    return { start: Math.max(0, size - n), end: size - 1 };
+  }
+  const start = Number(a);
+  let end = b === '' ? size - 1 : Number(b);
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start >= size || end < start) return 'invalid';
+  end = Math.min(end, size - 1);
+  return { start, end };
+}
+
+function serveStream(data, port) {
+  const item = visibleFiles(listing || { files: [] }).find((f) => f.path === data.path);
+  if (!item || item.is_dir || !session) {
+    port.postMessage({ type: 'ENIDOR_STREAM_RESPONSE', status: 404, statusText: 'Not Found', headers: {}, stream: null });
+    return;
+  }
+  const totalSize = Math.max(0, Number(item.size) || 0);
+  const headers = {
+    'Content-Type': getMimeType(item.name),
+    'Accept-Ranges': 'bytes',
+    'X-Content-Type-Options': 'nosniff',
+    // Even if this URL is opened directly, its content is sandboxed and can't run script.
+    'Content-Security-Policy': "sandbox; default-src 'none'; img-src 'self' blob: data:; media-src 'self' blob:",
+  };
+
+  const range = parseRange(data.range, totalSize);
+  if (range === 'invalid') {
+    headers['Content-Range'] = `bytes */${totalSize}`;
+    port.postMessage({ type: 'ENIDOR_STREAM_RESPONSE', status: 416, statusText: 'Range Not Satisfiable', headers, stream: null });
+    return;
+  }
+  let status = 200;
+  let start = 0;
+  let length = totalSize;
+  if (range) {
+    status = 206;
+    start = range.start;
+    length = range.end - range.start + 1;
+    headers['Content-Range'] = `bytes ${range.start}-${range.end}/${totalSize}`;
+  }
+  if (totalSize > 0) headers['Content-Length'] = String(length);
+
+  const abortController = new AbortController();
+  // The player reads at playback speed. Only fetch ahead of it by STREAM_BUFFER_BYTES, so a
+  // long video neither fills memory nor competes with what's about to be watched.
+  let pulled = null;
+  const stream = new ReadableStream({
+    // Not awaited: the stream only calls pull() once start() has returned.
+    start(controller) {
+      (async () => {
+        try {
+          const enqueue = (chunk) => {
+            controller.enqueue(chunk.slice());
+            if (controller.desiredSize > 0) return null;
+            return new Promise((resolve) => { pulled = resolve; });
+          };
+          if (length > 0) await session.fetchAll(item.path, start, length, enqueue, abortController.signal);
+          controller.close();
+        } catch (e) {
+          controller.error(e);
+        }
+      })();
+    },
+    pull() {
+      pulled?.();
+      pulled = null;
+    },
+    cancel() {
+      abortController.abort(new DOMException('Stream cancelled', 'AbortError'));
+      pulled?.();
+    },
+  }, new ByteLengthQueuingStrategy({ highWaterMark: STREAM_BUFFER_BYTES }));
+
+  port.postMessage({
+    type: 'ENIDOR_STREAM_RESPONSE',
+    status,
+    statusText: status === 206 ? 'Partial Content' : 'OK',
+    headers,
+    stream,
+  }, [stream]);
+}
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js', { scope: './' })
-    .catch(err => console.error('SW registration failed:', err));
+    .catch((err) => console.error('SW registration failed:', err));
 
   navigator.serviceWorker.addEventListener('message', (event) => {
     const data = event.data;
-    if (data.type === 'ENIDOR_STREAM_REQUEST') {
-      const port = event.ports[0];
-      const item = visibleFiles(listing || { files: [] }).find(f => f.path === data.path) || { name: 'stream', size: 0, path: data.path };
-      
-      const totalSize = Math.max(0, Number(item.size) || 0);
-      let start = 0;
-      let end = totalSize > 0 ? totalSize - 1 : 0;
-      let status = 200;
-      const headers = {
-        'Content-Type': getMimeType(item.name),
-        'Accept-Ranges': 'bytes'
-      };
-      if (totalSize > 0) {
-        headers['Content-Length'] = totalSize;
-      }
-
-      if (data.range && totalSize > 0) {
-        const parts = data.range.replace(/bytes=/, "").split("-");
-        start = parseInt(parts[0], 10);
-        end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
-        status = 206;
-        headers['Content-Range'] = `bytes ${start}-${end}/${totalSize}`;
-        headers['Content-Length'] = (end - start) + 1;
-      }
-
-      const streamLength = totalSize > 0 ? (end - start + 1) : 0; // 0 length for unknown sizes (like zip)
-
-      const abortController = new AbortController();
-      const stream = new ReadableStream({
-        async start(controller) {
-          try {
-            await session.fetchRange(data.path, start, streamLength, (chunk) => {
-              controller.enqueue(chunk);
-            }, abortController.signal);
-            controller.close();
-          } catch (e) {
-            controller.error(e);
-          }
-        },
-        cancel() {
-          abortController.abort(new DOMException('Stream cancelled', 'AbortError'));
-        }
-      });
-      
-      port.postMessage({
-        type: 'ENIDOR_STREAM_RESPONSE',
-        status,
-        statusText: status === 206 ? 'Partial Content' : 'OK',
-        headers,
-        stream
-      }, [stream]);
-    }
+    // Several share pages can be open at once; answer only requests made by this one.
+    if (data?.type !== 'ENIDOR_STREAM_REQUEST' || data.session !== STREAM_SESSION) return;
+    const port = event.ports[0];
+    if (port) serveStream(data, port);
   });
 }
 
