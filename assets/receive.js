@@ -1371,6 +1371,15 @@ function discardStored() {
 const PIN_ERRORS = new Set(['pin_required', 'invalid_pin', 'wrong_pin']);
 const PIN_LOCKED = new Set(['pin_locked', 'too_many_attempts']);
 
+// "Too many wrong attempts" message with the host's wait time (retry_after, seconds) when given.
+function lockedMessage(list) {
+  const secs = Number(list?.retry_after) || 0;
+  if (secs <= 0) return 'Too many wrong attempts. Wait a few minutes, then try again.';
+  const mins = Math.ceil(secs / 60);
+  const wait = mins >= 60 ? `${Math.ceil(mins / 60)} hour${mins > 60 ? 's' : ''}` : `${mins} minute${mins === 1 ? '' : 's'}`;
+  return `Too many wrong attempts. Try again in ${wait}.`;
+}
+
 // Lists the room root, asking for a PIN while the host requires one. Resolves with the listing;
 // rejects (to the caller's showError) if the connection fails.
 function listWithPin() {
@@ -1408,14 +1417,14 @@ function listWithPin() {
           return;
         }
         if (PIN_ERRORS.has(list?.error)) return ask('Wrong PIN. Check it with the sender and try again.');
-        if (PIN_LOCKED.has(list?.error)) return ask('Too many wrong attempts. Wait a few minutes, then try again.');
+        if (PIN_LOCKED.has(list?.error)) return ask(lockedMessage(list));
         if (list?.error) return reject(new ShareError('closed', String(list.error)));
         resolve(list);
       });
       setCard(
         el('div', { class: 'rx-message' },
           icon('alert', 'rx-big accent'),
-          el('h2', { class: 'rx-card-title' }, 'Private deployment'),
+          el('h2', { class: 'rx-card-title' }, 'PIN-protected share'),
           form,
         ),
       );
@@ -1424,7 +1433,7 @@ function listWithPin() {
 
     session.list('').then((list) => {
       if (PIN_ERRORS.has(list?.error)) ask('');
-      else if (PIN_LOCKED.has(list?.error)) ask('Too many wrong attempts. Wait a few minutes, then try again.');
+      else if (PIN_LOCKED.has(list?.error)) ask(lockedMessage(list));
       else if (list?.error) reject(new ShareError('closed', String(list.error)));
       else resolve(list);
     }, reject);
