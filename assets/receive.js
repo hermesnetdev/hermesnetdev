@@ -247,6 +247,13 @@ function readLink() {
     if (/^\d{6}$/.test(clean)) legacy = true;
   }
   const peer = (hashParams?.get('peer') || params.get('peer') || '').trim();
+  // Receive by QR (receive/): #room=<one-time code>&pin=<its key>. No link record; whoever answered
+  // the QR registered that code, and the key is the room's PIN.
+  const room = (hashParams?.get('room') || '').trim();
+  const pin = (hashParams?.get('pin') || '').trim();
+  if (/^[a-z0-9]{16}$/.test(room) && /^[A-Za-z0-9]{20,64}$/.test(pin)) {
+    return { id: null, legacy: false, peer: '', room, pin };
+  }
   return { id, legacy: !id && legacy, peer: PEER_ID_RE.test(peer) ? peer : '' };
 }
 
@@ -997,7 +1004,7 @@ function backButton(label = 'Back to files', cls = 'btn-secondary') {
 }
 
 function setHeadline() {
-  ui.kicker.textContent = listing && listing.room_name ? `Deployment: ${listing.room_name}` : 'Shared with you on Enidor';
+  ui.kicker.textContent = 'Shared with you on Enidor';
   const who = host || 'Someone';
   ui.title.textContent = listing && listing.room_name ? listing.room_name : (singleFile ? `${who} sent you a file.` : `${who} shared a folder with you.`);
   document.title = listing && listing.room_name ? `${listing.room_name} · Enidor` : `${who} shared ${singleFile ? 'a file' : 'a folder'} · Enidor`;
@@ -1468,6 +1475,10 @@ function renderCode() {
 }
 
 async function main() {
+  if (link.room) {
+    await openReceivedRoom();
+    return;
+  }
   if (link.legacy) {
     ui.title.textContent = 'This link format is no longer supported.';
     ui.lede.textContent = 'Links with a 6-digit room code stopped working in the browser. Ask the sender for a new share link from the Enidor app.';
@@ -1556,8 +1567,42 @@ addEventListener('beforeunload', (evt) => {
 
 addEventListener('hashchange', () => {
   const next = readLink();
-  if (next.id !== link.id || next.peer !== link.peer || next.legacy !== link.legacy) location.reload();
+  if (next.id !== link.id || next.peer !== link.peer || next.legacy !== link.legacy || next.room !== link.room) location.reload();
 });
+
+// Receive by QR: the sender answered our one-time code (see receive/ and the app's receive_qr.go).
+async function openReceivedRoom() {
+  if (!config.signal || config.relays.length === 0) {
+    showMessage({ title: 'Receiving isn’t available here right now', body: 'Ask the sender to share a link from Enidor instead.', actions: [appLink('Get Enidor')] });
+    return;
+  }
+  code = link.room;
+  ui.title.textContent = 'Files sent to you';
+  ui.lede.textContent = 'They come straight from the sender’s device, encrypted end to end. Nothing is uploaded to a cloud.';
+  sweepOldDownloads();
+  showStatus('Finding the sender…');
+  try {
+    // Whoever registered this code answered our QR; the connection is then checked against them.
+    expectedPeer = await lookUp(config.signal, code);
+    showStatus('Opening an encrypted tunnel…', 'Connecting straight to the sender’s device.');
+    session = new Session(code, expectedPeer, config.relays);
+    session.onState = renderConnState;
+    session.pin = link.pin;
+    await session.start();
+    await session.connect();
+    const list = await listWithPin();
+    host = String(list.host_name || '').trim();
+    if (Array.isArray(list.files) && list.files.length === 0) throw new ShareError('closed');
+    const files = visibleFiles(list);
+    singleFile = files.length === 1 && !files[0].is_dir;
+    listing = list;
+    path = '';
+    setHeadline();
+    renderListing();
+  } catch (err) {
+    showError(err);
+  }
+}
 
 document.addEventListener('click', (evt) => {
   const target0 = evt.target.closest?.('[data-scroll]');

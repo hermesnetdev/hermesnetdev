@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Same policy as the rest of the site: no inline scripts or styles, nothing from other origins. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <!-- No inline scripts or styles; connect-src lists the relay's room directory (https :5443). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://*.libp2p.direct:5443; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Receive files · Enidor</title>
-  <meta name="description" content="Receive files someone sends you with Enidor: scan their QR code or enter the link. Download in your browser, no app or account needed.">
+  <meta name="description" content="Receive files from someone with Enidor: show this QR code, they scan it in the app and send. Download in your browser, no app or account needed.">
   <meta name="referrer" content="no-referrer">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -15,14 +15,22 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://hermesnetdev.github.io/hermesnetdev/receive/">
   <meta property="og:title" content="Receive files with Enidor">
-  <meta property="og:description" content="Scan the sender’s QR code or enter their link, and download straight from their device.">
+  <meta property="og:description" content="Show a QR code, they scan it with Enidor, and the files come straight to your browser.">
   <meta property="og:image" content="https://hermesnetdev.github.io/hermesnetdev/assets/og.jpg">
   <link rel="icon" href="../assets/appicon.png" type="image/png">
   <link rel="apple-touch-icon" href="../assets/appicon.png">
+
+  <!-- The relay's room directory: we wait here for the sender's room to appear. Same as d/. -->
+  <script type="application/json" id="enidor-config">
+  {
+    "signal": "https://148-113-58-51.k51qzi5uqu5dmhescvowp6kvpqhpwurmgssf2j4730dv7obtojm2c2qknud45e.libp2p.direct:5443/room"
+  }
+  </script>
+
   <link rel="stylesheet" href="../assets/style.css">
   <link rel="stylesheet" href="../assets/receive.css">
   <link rel="stylesheet" href="../assets/receive-start.css">
-  <script src="../assets/vendor/jsQR.js" defer></script>
+  <script src="../assets/vendor/qrcode.js" defer></script>
   <script src="../assets/receive-start.js" defer></script>
 </head>
 <body>
@@ -43,35 +51,36 @@
       <div class="wrap">
         <p class="eyebrow">Enidor</p>
         <h1 class="rx-title">Receive files</h1>
-        <p class="rx-lede">Someone wants to send you files with Enidor. Scan the QR code on their screen, or enter the link or code they gave you. You download straight from their device, no app or account needed.</p>
+        <p class="rx-lede">Ask the sender to scan this code with Enidor. The files come straight from their device to this browser. No app or account needed here.</p>
 
-        <div class="rx-card rs-options" aria-live="polite">
-          <div>
-            <h2 class="rx-card-title">Scan their QR code</h2>
-            <p class="rx-card-body">On a phone you can also just point your camera app at it.</p>
-            <div class="rs-row">
-              <button type="button" class="btn btn-primary" id="rs-scan">Scan QR code</button>
-              <button type="button" class="btn btn-ghost" id="rs-stop" hidden>Stop camera</button>
-            </div>
-            <div class="rs-camera" id="rs-camera" hidden>
-              <video id="rs-video" playsinline muted></video>
-            </div>
-            <canvas id="rs-canvas" hidden></canvas>
-            <p class="rs-error" id="rs-scan-error" role="alert" hidden></p>
+        <div class="rx-card rs-receive" aria-live="polite">
+          <div class="rs-qr-wrap">
+            <canvas id="rs-qr" class="rs-qr" width="260" height="260" role="img" aria-label="QR code to receive files"></canvas>
           </div>
-
-          <div class="rs-divider">or</div>
-
-          <div>
-            <h2 class="rx-card-title">Enter the link or code</h2>
-            <form class="rs-row" id="rs-form" novalidate>
-              <label class="visually-hidden" for="rs-input">Link or code</label>
-              <input class="rs-input" id="rs-input" type="text" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="https://…/d/?link=…  or  6900 ef5b 4284 6930">
-              <button type="submit" class="btn btn-primary">Open</button>
-            </form>
-            <p class="rs-error" id="rs-input-error" role="alert" hidden></p>
+          <div class="rs-receive-text">
+            <h2 class="rx-card-title" id="rs-state">Waiting for the sender…</h2>
+            <ol class="rs-steps">
+              <li>On the sending phone or computer, open <strong>Enidor</strong>.</li>
+              <li>Tap <strong>⚡</strong>, then <strong>Scan QR</strong>, and scan this code.</li>
+              <li>They choose files or a folder and tap <strong>Send</strong>. The download starts here.</li>
+            </ol>
+            <p class="rx-note" id="rs-note">Keep this page open. The code works once and expires after 30 minutes.</p>
+            <div class="rs-row">
+              <button type="button" class="btn btn-ghost" id="rs-new">New code</button>
+            </div>
+            <p class="rs-error" id="rs-error" role="alert" hidden></p>
           </div>
         </div>
+
+        <details class="rx-card rs-link">
+          <summary class="rx-card-title">Got a share link instead?</summary>
+          <form class="rs-row" id="rs-form" novalidate>
+            <label class="visually-hidden" for="rs-input">Share link or code</label>
+            <input class="rs-input" id="rs-input" type="text" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="https://…/d/?link=…  or  6900 ef5b 4284 6930">
+            <button type="submit" class="btn btn-primary">Open</button>
+          </form>
+          <p class="rs-error" id="rs-input-error" role="alert" hidden></p>
+        </details>
 
         <ul class="rx-trust" aria-label="How receiving works">
           <li>
@@ -84,7 +93,7 @@
           </li>
           <li>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z"/></svg>
-            No account needed
+            No names, no accounts
           </li>
         </ul>
       </div>
