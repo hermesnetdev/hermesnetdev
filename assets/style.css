@@ -16,6 +16,8 @@
   --line: rgba(0, 0, 0, 0.12);
   --line-soft: rgba(0, 0, 0, 0.06);
   --accent: #0071e3;
+  --receive: #1d9a4f;
+  --receive-hover: #17803f;
   --accent-hover: #0077ed;
   --on-accent: #ffffff;
   --ok: #1db954;
@@ -45,6 +47,8 @@
     --line: rgba(255, 255, 255, 0.16);
     --line-soft: rgba(255, 255, 255, 0.08);
     --accent: #2997ff;
+  --receive: #2fb35c;
+  --receive-hover: #279a4e;
     --accent-hover: #47a6ff;
     --ok: #30d158;
     --warn: #ff9f0a;
@@ -66,6 +70,8 @@
   --line: rgba(255, 255, 255, 0.16);
   --line-soft: rgba(255, 255, 255, 0.08);
   --accent: #2997ff;
+  --receive: #2fb35c;
+  --receive-hover: #279a4e;
   --accent-hover: #47a6ff;
   --ok: #30d158;
   --warn: #ff9f0a;
@@ -299,6 +305,103 @@ code {
   font-size: 0.875rem;
 }
 
+/* Receive files: green, so it stands apart from the blue Download buttons. */
+.btn-receive {
+  background: var(--receive);
+  color: #fff;
+}
+
+.btn-receive:hover {
+  background: var(--receive-hover);
+}
+
+.btn-small .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.receive-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 620px;
+  margin: 28px auto 0;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in srgb, var(--receive) 35%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--receive) 9%, transparent);
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.receive-cta:hover {
+  background: color-mix(in srgb, var(--receive) 15%, transparent);
+  text-decoration: none;
+}
+
+.receive-cta:active {
+  transform: scale(0.99);
+}
+
+.receive-cta-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--receive);
+}
+
+.receive-cta-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.receive-cta-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+}
+
+.receive-cta-text span {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.receive-cta-btn {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 560px) {
+  .receive-cta {
+    flex-wrap: wrap;
+  }
+
+  .receive-cta-btn {
+    width: 100%;
+  }
+}
+
 .btn .icon {
   width: 18px;
   height: 18px;
@@ -397,6 +500,10 @@ code {
   }
 
   .header-inner > .btn {
+    margin-left: auto;
+  }
+
+  .header-actions {
     margin-left: auto;
   }
 }
