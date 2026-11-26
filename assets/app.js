@@ -148,6 +148,8 @@
         if (arch && aArch === arch) s += 20;
         else if (!aArch || aArch === 'x86') s += 10;
         if (platform === 'windows' && /\.exe$/i.test(a.name)) s += 2;
+        if (platform === 'windows' && /install|setup|\.msix?$/i.test(a.name)) s += 3;
+        if (platform === 'android' && /\.apk$/i.test(a.name)) s += 2;
         if (platform === 'linux' && /\.appimage$/i.test(a.name)) s += 2;
         if (platform === 'linux' && /\.deb$/i.test(a.name)) s += 1;
       }
@@ -268,6 +270,21 @@
     );
   }
 
+  // One download per platform (the best installer, see bestAsset), the visitor's platform first.
+  // The full file list stays on the GitHub release page.
+  function installers(assets) {
+    const os = detectOS();
+    const ids = ['mac', 'windows', 'linux', 'android'].sort((a, b) => (b === os) - (a === os));
+    return ids.map((id) => bestAsset(assets, id, '')).filter(Boolean);
+  }
+
+  // Release notes are Markdown written for GitHub; here, show just their first plain paragraph.
+  function notesSummary(notes) {
+    const paras = String(notes || '').split(/\n\s*\n/).map((p) => p.trim());
+    const plain = paras.find((p) => p && !/^(#|>|\||[-*] |\d+\. |```)/.test(p));
+    return plain ? plain.replace(/\*\*|__|`/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\s+/g, ' ') : '';
+  }
+
   function renderLatest(release, isLatest) {
     return el('article', { class: 'release-latest' },
       el('header', { class: 'release-head' },
@@ -285,9 +302,10 @@
         ),
       ),
       // Plain text: release notes are never parsed as HTML.
-      release.notes && el('p', { class: 'release-notes release-notes-text' }, release.notes),
+      notesSummary(release.notes) && el('p', { class: 'release-notes release-notes-text' },
+        notesSummary(release.notes), ' ', el('a', { href: release.url }, 'What’s new')),
       release.assets.length
-        ? el('ul', { class: 'assets' }, release.assets.map(renderAsset))
+        ? el('ul', { class: 'assets' }, installers(release.assets).map(renderAsset))
         : el('p', { class: 'release-notes' }, 'No downloads attached to this release yet.'),
     );
   }
@@ -303,7 +321,7 @@
             r.prerelease && el('span', { class: 'badge' }, 'Pre-release'),
           ),
           el('span', { class: 'history-assets' },
-            r.assets.map((a) => el('a', { href: a.url, title: a.name }, shortAssetLabel(a, r.assets))),
+            installers(r.assets).map((a) => el('a', { href: a.url, title: a.name }, platformLabel(a.platform))),
           ),
         )),
       ),
