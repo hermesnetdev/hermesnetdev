@@ -413,6 +413,20 @@ button.rx-row:hover {
   font-size: 0.875rem;
 }
 
+.rx-ad-note {
+  max-width: 46ch;
+  margin: 18px auto 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-wrap: balance;
+}
+
+.rx-ad-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .rx-trust li {
   display: inline-flex;
   align-items: center;

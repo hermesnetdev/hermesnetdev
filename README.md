@@ -4,13 +4,18 @@ Marketing site for **Enidor** — the sovereign private mesh — served with Git
 `main` branch.
 
 Plain static site, no build step and no external dependencies (the type is the system font
-stack, so nothing is fetched at runtime):
+stack, so nothing is fetched at runtime apart from Google AdSense, once it's switched on):
 
-- `index.html`: the page
+- `index.html`: the home page
+- `help/`, `about/`, `privacy/`: the help/FAQ, about-and-contact, and privacy policy pages
 - `assets/style.css`: design system — tokens, light/dark themes, and sections that stay dark in
   both themes via the `.dark` class
 - `assets/app.js`: loads releases live from [hermesnetdev/From_project_1_releases](https://github.com/hermesnetdev/From_project_1_releases/releases)
-- `assets/ui.js`: reveal-on-scroll for sections marked `data-reveal`
+- `assets/ui.js`: the footer year, and reveal-on-scroll for sections marked `data-reveal`
+- `assets/ads.js`: fills the Google AdSense placements with ad units (see [Ads](#ads))
+- `ads.txt`, `robots.txt`, `sitemap.xml`: for ad networks and search crawlers
+- `CNAME`: the custom domain, `enidor.com`
+- `googlefef17e26addffc31.html`: Google Search Console's ownership check. Keep it
 - `assets/appicon.png`: the app icon — favicon, Apple touch icon, Open Graph image, and the
   tile in the download band
 - `assets/mark.png`: the same mark cropped tight on transparency, used as the header logo and
@@ -54,9 +59,10 @@ The `<head>` carries Open Graph (LinkedIn, Facebook, WhatsApp, Slack, Discord, T
 iMessage), Twitter/X card tags, icon and platform-chrome tags, and a `SoftwareApplication`
 JSON-LD block for Google rich results.
 
-Every absolute URL in those tags points at `https://hermesnetdev.github.io/hermesnetdev/`.
-**If the site moves to a custom domain, update those URLs** — `og:url`, `og:image`,
-`og:image:secure_url`, `twitter:image`, `canonical`, and the `url`/`image` fields in the JSON-LD.
+Every absolute URL in those tags points at `https://enidor.com/`. **If the domain changes,
+update those URLs** in every page — `og:url`, `og:image`, `og:image:secure_url`,
+`twitter:image`, `canonical`, and the `url`/`image` fields in the JSON-LD — and in
+`sitemap.xml` and `robots.txt`.
 
 `assets/og.jpg` is 2400×1260 — retina-sharp at the 1200-wide size every platform displays —
 and 197 KB, which keeps it under the ~300 KB ceiling where WhatsApp and Telegram stop
@@ -73,6 +79,45 @@ After changing any of this, re-scrape the caches so the old preview stops showin
 Twitter/X `site` and `creator` handles are not set; add `twitter:site` and `twitter:creator`
 if the project gets an account.
 
+## Ads
+
+Every page carries Google AdSense (publisher ID `ca-pub-8298378592499092`). Each has Google's
+AdSense tag in its `<head>`, and `assets/ads.js` fills its ad placements.
+
+**Ads on the receive page (`d/`) are a trade-off.** Ad code runs with the same access as the
+page's own code. There, it could read the share link, the PIN as it's typed, and the shared
+files themselves (by asking `d/sw.js` to stream them). The page says it shows ads and points
+to the app, which has none, and the privacy policy says what the ad code can see. To keep
+shares away from ad code, serve the receiver from another subdomain (say `files.enidor.com`)
+in a frame on `d/`, with the ads outside the frame.
+
+### Setup
+
+- The site is verified with the **AdSense code snippet**, the tag in the home page's `<head>`.
+  `ads.txt` lists the same publisher ID; GitHub Pages serves it at `https://enidor.com/ads.txt`.
+- In **Privacy & messaging**, publish the **European regulations** message. Without a
+  certified consent message, visitors from the EEA, UK and Switzerland don't get
+  personalized ads.
+
+### Placing ads
+
+After approval, create display ad units (**Ads → By ad unit**) and put their IDs in `SLOTS` in
+`assets/ads.js`. Placements are `<aside class="ad" data-ad="…">` elements in the pages:
+`home-1`, `home-2`, `help-1`, `help-2`, `about-1`, `privacy-1`, `receive-1` and `receive-2`.
+Each uses its own unit if `SLOTS` has
+one, otherwise `SLOTS.default`. A placement with no unit, or one AdSense leaves unfilled,
+stays hidden.
+
+The placements sit between content sections, away from download buttons. AdSense doesn't
+allow ads that could be mistaken for download links. If you switch on **Auto ads** as well,
+exclude the hero and the releases section in its settings for the same reason.
+
+Pages that aren't `enidor.com` (a local preview, say) request test ads, so they don't count
+as impressions.
+
+Adding a page: link it from the footers and add it to `sitemap.xml`. To give it ads, copy the
+AdSense tag and the `assets/ads.js` line from the home page's `<head>`, and add a placement.
+
 ## Receive page
 
 `d/` lets someone download a Guest Room share without installing anything. A share link is
@@ -80,8 +125,8 @@ the page plus a 128-bit link ID that the app creates with **Copy web link**
 (`POST /link/create/{code}` on the relay):
 
 ```
-https://hermesnetdev.github.io/hermesnetdev/d/?link=3f9c0e…(32 hex chars)
-https://hermesnetdev.github.io/hermesnetdev/d/?link=3f9c0e…#peer=12D3KooW…   (optional pin to the sharer)
+https://enidor.com/d/?link=3f9c0e…(32 hex chars)
+https://enidor.com/d/?link=3f9c0e…#peer=12D3KooW…   (optional pin to the sharer)
 ```
 
 `d/#<link id>` works too. The page reads the link only from the URL; there's no box to type one in.
