@@ -5,8 +5,8 @@
   const RELEASES_PAGE = `https://github.com/${REPO}/releases`;
   const API_URL = `https://api.github.com/repos/${REPO}/releases?per_page=30`;
   // v2: notes are stored as plain text (v1 cached GitHub's rendered HTML, which is never used now).
-  const CACHE_KEY = 'enidor:releases:v2';
-  const OLD_CACHE_KEYS = ['enidor:releases:v1'];
+  const CACHE_KEY = 'enidor:releases:v3'; // v3: .aab no longer counted as an Android download
+  const OLD_CACHE_KEYS = ['enidor:releases:v1', 'enidor:releases:v2'];
   const CACHE_TTL_MS = 10 * 60 * 1000;
   const FETCH_TIMEOUT_MS = 8000;
   const MAX_NOTES_CHARS = 2000;
@@ -15,11 +15,12 @@
   // which anything running on this origin could have written.
   const TRUSTED_URL = /^https:\/\/github\.com\/hermesnetdev\//;
 
-  // Checksums, signatures, update metadata: attached to releases but not something to install.
-  const NOT_AN_INSTALLER = /(\.(sha(1|256|512)(sum)?|md5|sig|asc|minisig|pem|blockmap|txt|json|ya?ml|sbom)$)|checksums?|latest(-mac|-linux)?\.yml/i;
+  // Checksums, signatures, update metadata, and Android App Bundles (.aab: a Play Store upload
+  // format that phones can't install): attached to releases but not something to install.
+  const NOT_AN_INSTALLER = /(\.(sha(1|256|512)(sum)?|md5|sig|asc|minisig|pem|blockmap|txt|json|ya?ml|sbom|aab)$)|checksums?|latest(-mac|-linux)?\.yml/i;
 
   const PLATFORMS = [
-    { id: 'android', label: 'Android', test: /\.apk$|\.aab$|android/i },
+    { id: 'android', label: 'Android', test: /\.apk$|android/i },
     { id: 'windows', label: 'Windows', test: /windows|win(32|64)|\.exe$|\.msix?$/i },
     { id: 'mac', label: 'macOS', test: /darwin|mac[-_. ]?os|(^|[^a-z])(mac|osx)([^a-z]|$)|\.dmg$|\.pkg$/i },
     { id: 'linux', label: 'Linux', test: /linux|\.appimage$|\.deb$|\.rpm$/i },
