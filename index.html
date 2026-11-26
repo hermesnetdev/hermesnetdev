@@ -6,7 +6,7 @@
   <!-- Content Security Policy. Inline styles are allowed only for the decorative SVG/mockup markup. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Enidor — The cloud you already own</title>
-  <meta name="description" content="Enidor links your computers into one encrypted, peer-to-peer mesh. Mount any device, share files revocably, stream media — no cloud servers, no public IP. Free for macOS and Windows.">
+  <meta name="description" content="Send files straight from your device, encrypted end to end: to a handle, by scanning a QR code, or with a link anyone can open in a browser. No cloud uploads, no account needed to receive. Free for macOS, Windows, Linux and Android.">
   <link rel="canonical" href="https://enidor.com/">
   <meta name="author" content="hermesnetdev">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -20,20 +20,20 @@
   <meta property="og:url" content="https://enidor.com/">
   <meta property="og:locale" content="en_US">
   <meta property="og:title" content="Enidor — The cloud you already own">
-  <meta property="og:description" content="Link your computers into one encrypted peer-to-peer mesh. Mount any device, send revocable files, stream media — no cloud servers, no public IP. Free for macOS and Windows.">
+  <meta property="og:description" content="Send files straight from your device, encrypted end to end: to a handle, by QR code, or with a link anyone can open in a browser. No cloud uploads. Free for macOS, Windows, Linux and Android.">
   <meta property="og:image" content="https://enidor.com/assets/og.jpg">
   <meta property="og:image:secure_url" content="https://enidor.com/assets/og.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="2400">
   <meta property="og:image:height" content="1260">
-  <meta property="og:image:alt" content="Enidor — the cloud you already own. The sovereign private mesh, free for macOS and Windows.">
+  <meta property="og:image:alt" content="Enidor — the cloud you already own. The sovereign private mesh, free for macOS, Windows, Linux and Android.">
 
   <!-- X / Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Enidor — The cloud you already own">
-  <meta name="twitter:description" content="Link your computers into one encrypted peer-to-peer mesh. Mount any device, send revocable files, stream media — no cloud servers, no public IP.">
+  <meta name="twitter:description" content="Send files straight from your device, encrypted end to end: to a handle, by QR code, or with a browser link. No cloud uploads.">
   <meta name="twitter:image" content="https://enidor.com/assets/og.jpg">
-  <meta name="twitter:image:alt" content="Enidor — the cloud you already own. The sovereign private mesh, free for macOS and Windows.">
+  <meta name="twitter:image:alt" content="Enidor — the cloud you already own. The sovereign private mesh, free for macOS, Windows, Linux and Android.">
 
   <!-- icons and platform chrome -->
   <link rel="icon" href="assets/appicon.png" type="image/png">
@@ -52,18 +52,18 @@
     "alternateName": "Enidor — The Sovereign Private Mesh",
     "applicationCategory": "UtilitiesApplication",
     "applicationSubCategory": "File sharing and private networking",
-    "operatingSystem": "macOS 12+, Windows 10, Windows 11",
+    "operatingSystem": "macOS 12+, Windows 10, Windows 11, Linux, Android 5.0+",
     "url": "https://enidor.com/",
     "downloadUrl": "https://github.com/hermesnetdev/From_project_1_releases/releases",
     "image": "https://enidor.com/assets/og.jpg",
-    "description": "Enidor links your computers into one sovereign, end-to-end encrypted peer-to-peer mesh. Mount any of your devices, send files that stay on your drive and can be revoked, host guest rooms behind 6-digit codes, and stream media straight from the host — with no cloud servers and no public IP.",
+    "description": "Enidor sends files straight from your device, encrypted end to end: Pulse Drop to a handle, send by scanning a QR code with no account needed, or share a room that anyone can download from in a browser. No cloud uploads, no public IP. For macOS, Windows, Linux and Android.",
     "featureList": [
-      "Sovereign ecosystem bound to a global handle",
-      "Encrypted peer-to-peer tunnels with revocable Micro-Rooms",
-      "Pulse Drop transfers to unlinked identities",
-      "Guest rooms behind ephemeral 6-digit codes",
-      "On-the-fly media streaming from the host drive",
-      "Real-time activity monitor and audit logs"
+      "Pulse Drop: send files and folders straight to a handle",
+      "Send by QR code with no account on either side",
+      "Receive files in any browser, no app needed",
+      "Shares with a link or code, optionally PIN-protected",
+      "Email sign-in with no password or PIN",
+      "Real-time transfers, activity monitor and audit logs"
     ],
     "offers": {
       "@type": "Offer",
@@ -99,9 +99,9 @@
         <span>Enidor</span>
       </a>
       <nav class="nav" aria-label="Primary">
+        <a href="#sharing">Send &amp; receive</a>
         <a href="#ecosystem">Ecosystem</a>
         <a href="#peers">Peers</a>
-        <a href="#sharing">Sharing</a>
         <a href="#control">Control</a>
         <a href="#security">Security</a>
         <a href="#start">Get started</a>
@@ -130,16 +130,16 @@
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
             <span>Download for Windows</span>
           </a>
-          <a class="btn btn-secondary" data-platform="linux" data-optional hidden href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+          <a class="btn btn-secondary" data-platform="linux" data-optional href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
             <span>Download for Linux</span>
           </a>
-          <a class="btn btn-secondary" data-platform="android" data-optional hidden href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
+          <a class="btn btn-secondary" data-platform="android" data-optional href="https://github.com/hermesnetdev/From_project_1_releases/releases/latest">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
             <span>Download for Android</span>
           </a>
         </div>
-        <p class="cta-meta" id="cta-meta">Free · macOS (Apple Silicon &amp; Intel) · Windows 10 &amp; 11 (64-bit)</p>
+        <p class="cta-meta" id="cta-meta">Free · macOS · Windows · Linux · Android</p>
         <p class="cta-meta">Someone sending you files? <a href="receive/">Receive them in your browser</a>, no app needed.</p>
 
         <div class="hero-stage" data-reveal>
@@ -237,9 +237,9 @@
     <section id="ecosystem" class="section dark">
       <div class="wrap split" data-reveal>
         <div class="split-copy">
-          <p class="kicker">The Sovereign Ecosystem</p>
+          <p class="kicker">The Sovereign Ecosystem · Coming soon</p>
           <h2>One handle. Every device.</h2>
-          <p class="body-lg">Bind your hardware to a Global Handle like <code>@alex</code>. Once each device is authenticated with your authenticator app and Ecosystem PIN, they form an invisible, high-speed matrix — every drive one click away from every other.</p>
+          <p class="body-lg">Bind your hardware to a Global Handle like <code>@alex</code>. Once each device is signed in, they form an invisible, high-speed matrix — every drive one click away from every other.</p>
           <ul class="split-list">
             <li>
               <h4>Universal access</h4>
@@ -290,7 +290,7 @@
     <section id="peers" class="section">
       <div class="wrap split reverse" data-reveal>
         <div class="split-copy">
-          <p class="kicker">Direct Peer Matrix</p>
+          <p class="kicker">Direct Peer Matrix · Coming soon</p>
           <h2>Send a file without giving it away.</h2>
           <p class="body-lg">Search a colleague's Global Handle, forge a permanent encrypted tunnel, and talk. When you attach a file, nothing is uploaded — Enidor opens a Micro-Room: a private tunnel to that exact file, still sitting on your drive.</p>
           <ul class="split-list">
@@ -340,26 +340,40 @@
     <section id="sharing" class="section alt">
       <div class="wrap">
         <div class="section-head center" data-reveal>
-          <p class="kicker">Sharing</p>
-          <h2>Two ways to let someone in. Both temporary.</h2>
-          <p>Not everyone belongs in your permanent address book. Enidor gives you throughput without a relationship, and rooms that evaporate the moment you close them.</p>
+          <p class="kicker">Send &amp; receive</p>
+          <h2>Send anything, to anyone, in seconds.</h2>
+          <p>Files go straight from your device to theirs, encrypted end to end. Nothing is uploaded to a cloud, and the person receiving doesn't even need the app.</p>
         </div>
         <div class="cards" data-reveal>
           <article class="card">
             <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
-            <h3>Pulse Drop</h3>
-            <p>Beam massive files straight to someone you've never linked with. They get a prompt, they accept, and the transfer runs at full network speed — ephemeral, direct, nothing left behind.</p>
+            <h3>Pulse Drop to a handle</h3>
+            <p>Type someone's handle, or scan their Enidor QR, pick a file or a whole folder and send. They tap Accept and it arrives at full speed. Sends keep going in the background, with live progress and time left.</p>
           </article>
           <article class="card">
             <span class="card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20v.01M18 18v3h3v-3z"/></svg></span>
-            <h3>Guest Rooms</h3>
-            <p>Host up to five local folders at once behind ephemeral 6-digit codes. Hand the code to a group, they dock into exactly those folders, and access evaporates when you close the room.</p>
-            <div class="code-tiles" style="margin-top:22px"><span>4</span><span>8</span><span>2</span><span>9</span><span>1</span><span>3</span></div>
+            <h3>Scan a QR and send</h3>
+            <p>No handle, no account on their side. They open <a href="receive/">enidor.com/receive</a> and show a QR code; you scan it in Enidor, choose files and tap Send. The files open right in their browser.</p>
+          </article>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg></span>
+            <h3>Receive in any browser</h3>
+            <p>Got a link or a QR from someone on Enidor? Download straight from their device in Chrome, Safari or Firefox. If the connection drops, it picks up where it left off.</p>
+          </article>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span>
+            <h3>Rooms with a link or code</h3>
+            <p>Share files and folders as a room. Anyone with the link downloads in a browser, or joins with the code in Enidor, while your device is online. Lock it with a PIN, and take it offline whenever you like.</p>
+          </article>
+          <article class="card">
+            <span class="card-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/></svg></span>
+            <h3>On your phone, too</h3>
+            <p>Enidor for Android sends files or whole folders and scans QR codes with the camera. Everything you receive lands in <strong>Download/Enidor</strong>, ready to open.</p>
           </article>
           <article class="card">
             <span class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></span>
-            <h3>Universal streaming</h3>
-            <p>Why wait for a 10 GB download? A custom on-the-fly streaming engine plays video, high-fidelity audio and raw images straight from the host's drive — in Enidor's previewer or handed off to VLC or IINA.</p>
+            <h3>Preview before you download</h3>
+            <p>Play videos and music or look at photos and PDFs straight from the sender's drive, without waiting for a full download.</p>
           </article>
         </div>
       </div>
@@ -425,18 +439,18 @@
           </article>
           <article class="card">
             <span class="card-icon"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14.5v2.5"/></svg></span>
-            <h3>MFA and a cryptographic PIN</h3>
-            <p>Your identity is held by an authenticator app (TOTP) plus a local Ecosystem PIN. Without the PIN, the vault on that machine stays cryptographically scrambled.</p>
+            <h3>Sign in with a code, not a password</h3>
+            <p>Enter the one-time code we email you; there's no password or PIN to forget. Your keys stay in your device's own keychain, and a recovery code gets you back in if you lose a device.</p>
           </article>
           <article class="card">
             <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.6 6.6a8 8 0 1 0 10.8 0"/></svg></span>
-            <h3>Emergency kill switch</h3>
-            <p>Under threat? One click in the Security Center drops every inbound and outbound tunnel across all zones, severing the machine from the outside world.</p>
+            <h3>New devices have to earn trust</h3>
+            <p>A new phone or computer on your account can send files right away, but it can't manage your account until one of your devices approves it, you enter your recovery code, or 48 hours pass.</p>
           </article>
           <article class="card">
             <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M9 4.5A7.5 7.5 0 0 1 19.5 15M4.5 9A7.5 7.5 0 0 0 15 19.5"/></svg></span>
-            <h3>Revocation that's already done</h3>
-            <p>Unlink a device or revoke a Micro-Room and the tunnel closes immediately — active downloads fail, trust is deleted on both ends, access is gone for good.</p>
+            <h3>Access that ends when you say</h3>
+            <p>Take a room offline or stop a send and access ends at once, even mid-download. QR sends stop sharing on their own once everything is downloaded. Remove a device and it's signed out.</p>
           </article>
         </div>
       </div>
@@ -451,39 +465,39 @@
       <div class="wrap">
         <div class="section-head center" data-reveal>
           <p class="kicker">Get started</p>
-          <h2>Six steps to your own mesh.</h2>
-          <p>Install, claim your handle, and add devices. Nothing to configure on your router, and nothing to pay for.</p>
+          <h2>Up and running in a minute.</h2>
+          <p>Install, sign in with your email, and send. Nothing to configure on your router, and nothing to pay for.</p>
         </div>
         <ol class="steps" data-reveal>
           <li>
             <span class="step-num">STEP 01</span>
-            <h3>The genesis node</h3>
-            <p>Launch Enidor on your main computer, claim your <strong>Global Handle</strong>, scan the QR code with your authenticator app, save your recovery codes, and set the <strong>Ecosystem PIN</strong> that decrypts your local vault.</p>
+            <h3>Install Enidor</h3>
+            <p>Download it for your Mac, Windows or Linux computer, or your Android phone, from the buttons above.</p>
           </li>
           <li>
             <span class="step-num">STEP 02</span>
-            <h3>Expand the mesh</h3>
-            <p>Install Enidor on a second machine, sign in with your handle, confirm with your authenticator and PIN. Open <strong>My Ecosystem</strong> and both devices are there, ready to browse.</p>
+            <h3>Sign in with your email</h3>
+            <p>Enter the code we email you and pick your <strong>handle</strong>, like <code>@alex</code>. No password, no PIN. Save the recovery code it offers.</p>
           </li>
           <li>
             <span class="step-num">STEP 03</span>
-            <h3>Forge peer links</h3>
-            <p>In <strong>My Peers</strong>, search a colleague's handle and hit <strong>Forge Link</strong>. Once they accept, a permanent encrypted chat tunnel exists between you.</p>
+            <h3>Pulse Drop to a friend</h3>
+            <p>Tap <strong>+</strong>, then <strong>Pulse Drop</strong>. Type their handle or scan their QR, choose a file or folder, and send. They tap Accept.</p>
           </li>
           <li>
             <span class="step-num">STEP 04</span>
-            <h3>Attach, with an expiry</h3>
-            <p>Open a chat, click the paperclip, and pick how long they get access. Change your mind at any point and hit <strong>Revoke Access</strong> on the message.</p>
+            <h3>Send to someone without Enidor</h3>
+            <p>Ask them to open <a href="receive/">enidor.com/receive</a>. In Pulse Drop, choose <strong>Scan QR</strong>, scan the code on their screen, pick your files and send.</p>
           </li>
           <li>
             <span class="step-num">STEP 05</span>
-            <h3>Pulse Drop a stranger</h3>
-            <p>Look up a handle you don't want to keep, choose <strong>Pulse Drop</strong> instead of a link, and send. They accept the prompt and the file moves at full speed.</p>
+            <h3>Create a room</h3>
+            <p>Tap <strong>+</strong>, then <strong>Create a room</strong>, and add files or folders. Copy the link or code and send it; they download in a browser, or join it in Enidor.</p>
           </li>
           <li>
             <span class="step-num">STEP 06</span>
-            <h3>Stay in control</h3>
-            <p>The shield icon opens <strong>Security &amp; Settings</strong>: active sessions, themes, the kill switch, and <strong>Logout &amp; Unlink</strong> to erase the vault keys from that hardware.</p>
+            <h3>Keep track</h3>
+            <p><strong>Transfers</strong> shows every download with progress and time left. <strong>Settings</strong> lists your devices and your recovery code.</p>
           </li>
         </ol>
       </div>
@@ -506,15 +520,15 @@
             <p class="name">Windows</p>
             <p class="sub">10 &amp; 11, 64-bit</p>
           </li>
-          <li class="platform soon">
+          <li class="platform">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M7 12l2.2 2.2L7 16.4M12.5 16.4H17"/></svg>
             <p class="name">Linux</p>
-            <p class="sub">Coming soon</p>
+            <p class="sub">AppImage &amp; .deb, 64-bit</p>
           </li>
-          <li class="platform soon">
+          <li class="platform">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="8" width="14" height="12" rx="3"/><path d="m8 8-1.6-3M16 8l1.6-3M9.5 13h.01M14.5 13h.01"/></svg>
             <p class="name">Android</p>
-            <p class="sub">Coming soon</p>
+            <p class="sub">Android 5.0 and later</p>
           </li>
           <li class="platform soon">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/></svg>
@@ -544,7 +558,7 @@
         <div class="section-head center" data-reveal>
           <p class="kicker">Releases</p>
           <h2>Get the latest build.</h2>
-          <p>Builds are published on <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">GitHub Releases</a> and appear here the moment they go out. Once installed, Enidor keeps itself up to date in the background.</p>
+          <p>Builds are published on <a href="https://github.com/hermesnetdev/From_project_1_releases/releases">GitHub Releases</a> and appear here the moment they go out. To update, download the new version from here and install it over the old one.</p>
         </div>
 
         <div id="releases-root" class="releases" aria-live="polite">
@@ -555,7 +569,7 @@
         </noscript>
 
         <aside class="note">
-          <strong>Early access.</strong> The mesh, peer tunnels, guest rooms and streaming engine work today; we're iterating fast, so expect the occasional rough edge. Found a bug or want a feature? <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Open an issue</a>.
+          <strong>Early access.</strong> Pulse Drop, QR send and receive, rooms, browser downloads and the Android app work today; we're iterating fast, so expect the occasional rough edge. Found a bug or want a feature? <a href="https://github.com/hermesnetdev/From_project_1_releases/issues">Open an issue</a>.
         </aside>
       </div>
     </section>
