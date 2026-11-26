@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Send files with Enidor</title>
+  <meta name="description" content="Send files to someone on Enidor, straight from your device.">
+  <!-- one page per handle; none of them belong in search results -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../assets/appicon.png" type="image/png">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="../assets/receive.css">
+  <link rel="stylesheet" href="../assets/receive-start.css">
+  <script src="../assets/to.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../" aria-label="Enidor home">
+        <img class="brand-mark" src="../assets/mark.png" alt="" width="295" height="295">
+        <span>Enidor</span>
+      </a>
+      <a class="btn btn-primary btn-small rx-header-cta" href="../#releases">Get the app</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="rx-hero">
+      <div class="wrap">
+        <p class="eyebrow">Enidor</p>
+        <h1 class="rx-title" id="to-title">Send files with Enidor</h1>
+        <p class="rx-lede">This QR code belongs to someone on Enidor. You can send them files straight from your device, encrypted end to end.</p>
+
+        <div class="rx-card">
+          <h2 class="rx-card-title">How to send</h2>
+          <ol class="rs-steps">
+            <li><strong>Get Enidor</strong> for your phone or computer and sign in with your email.</li>
+            <li>Tap <strong>Send</strong>, choose <strong>Enidor user</strong>, and scan this QR code again, or type <span class="rs-handle" id="to-handle">their handle</span>.</li>
+            <li>Choose the files or folder. They’ll be asked to accept.</li>
+          </ol>
+          <div class="rx-actions">
+            <a class="btn btn-primary" href="../#releases">Get Enidor</a>
+            <a class="btn btn-ghost" href="../receive/">Receiving files instead?</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Same policy as the rest of the site: no inline scripts or styles, nothing from other origins. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Receive files · Enidor</title>
+  <meta name="description" content="Receive files someone sends you with Enidor: scan their QR code or enter the link. Download in your browser, no app or account needed.">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta property="og:site_name" content="Enidor">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hermesnetdev.github.io/hermesnetdev/receive/">
+  <meta property="og:title" content="Receive files with Enidor">
+  <meta property="og:description" content="Scan the sender’s QR code or enter their link, and download straight from their device.">
+  <meta property="og:image" content="https://hermesnetdev.github.io/hermesnetdev/assets/og.jpg">
+  <link rel="icon" href="../assets/appicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/appicon.png">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="../assets/receive.css">
+  <link rel="stylesheet" href="../assets/receive-start.css">
+  <script src="../assets/vendor/jsQR.js" defer></script>
+  <script src="../assets/receive-start.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../" aria-label="Enidor home">
+        <img class="brand-mark" src="../assets/mark.png" alt="" width="295" height="295">
+        <span>Enidor</span>
+      </a>
+      <a class="btn btn-primary btn-small rx-header-cta" href="../#releases">Get the app</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="rx-hero">
+      <div class="wrap">
+        <p class="eyebrow">Enidor</p>
+        <h1 class="rx-title">Receive files</h1>
+        <p class="rx-lede">Someone wants to send you files with Enidor. Scan the QR code on their screen, or enter the link or code they gave you. You download straight from their device, no app or account needed.</p>
+
+        <div class="rx-card rs-options" aria-live="polite">
+          <div>
+            <h2 class="rx-card-title">Scan their QR code</h2>
+            <p class="rx-card-body">On a phone you can also just point your camera app at it.</p>
+            <div class="rs-row">
+              <button type="button" class="btn btn-primary" id="rs-scan">Scan QR code</button>
+              <button type="button" class="btn btn-ghost" id="rs-stop" hidden>Stop camera</button>
+            </div>
+            <div class="rs-camera" id="rs-camera" hidden>
+              <video id="rs-video" playsinline muted></video>
+            </div>
+            <canvas id="rs-canvas" hidden></canvas>
+            <p class="rs-error" id="rs-scan-error" role="alert" hidden></p>
+          </div>
+
+          <div class="rs-divider">or</div>
+
+          <div>
+            <h2 class="rx-card-title">Enter the link or code</h2>
+            <form class="rs-row" id="rs-form" novalidate>
+              <label class="visually-hidden" for="rs-input">Link or code</label>
+              <input class="rs-input" id="rs-input" type="text" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="https://…/d/?link=…  or  6900 ef5b 4284 6930">
+              <button type="submit" class="btn btn-primary">Open</button>
+            </form>
+            <p class="rs-error" id="rs-input-error" role="alert" hidden></p>
+          </div>
+        </div>
+
+        <ul class="rx-trust" aria-label="How receiving works">
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            Encrypted end to end
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+            Straight from their device
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z"/></svg>
+            No account needed
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
